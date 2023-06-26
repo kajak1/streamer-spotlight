@@ -5,6 +5,8 @@ services:
     ports:
       - 3001:3001
     working_dir: /app
+    volumes:
+      - streamers-db:/etc/database
     
   frontend:
     build: ./frontend
@@ -12,3 +14,7 @@ services:
     ports:
       - 3000:3000
     working_dir: /app
+
+volumes:
+  streamers-db:
+    external: false

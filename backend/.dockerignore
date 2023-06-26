@@ -1,0 +1,5 @@
+prisma/dev.db
+prisma/dev-journal.db
+prisma/migrations
+
+mode_modules
