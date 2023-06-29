@@ -3,7 +3,7 @@ import winston, { transports } from "winston";
 const { format } = winston;
 
 const logFormatter = format.printf(({ level, message, timestamp }) => {
-	return `[${timestamp}] [${level}] message: "${message}"`;
+	return `[${timestamp}] [${level}]: "${message}"`;
 });
 
 export const logger = winston.createLogger({

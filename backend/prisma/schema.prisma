@@ -11,6 +11,11 @@ datasource db {
 }
 
 model Streamer {
-  id   Int    @id @default(autoincrement())
-  name String
+  id          String @id @default(uuid())
+  name        String
+  description String
+  platform    String
+  image       String
+  upvotes     Int
+  downvotes   Int
 }

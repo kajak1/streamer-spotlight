@@ -1,5 +1,6 @@
-import { logger } from "../../logger";
+import { Prisma, Streamer } from "@prisma/client";
 import { prisma } from "../prisma";
+import "express-async-errors";
 
 class StreamersRepository {
 	constructor() {
@@ -7,25 +8,63 @@ class StreamersRepository {
 	}
 
 	async findAll() {
-		logger.info("StreamersRepository.findAll()");
-		try {
-			const allUsers = await prisma.streamer.findMany();
-			logger.info(`${JSON.stringify(allUsers, null, 2)}`);
-		} catch (e) {
-			logger.error(`${JSON.stringify(e, null, 2)}`);
+		const allUsers = await prisma.streamer.findMany();
+
+		return allUsers;
+	}
+
+	async findOne(criteria: Prisma.StreamerWhereUniqueInput) {
+		const allUsers = await prisma.streamer.findUnique({
+			where: criteria,
+		});
+
+		return allUsers;
+	}
+
+	async insert(streamerToUpload: Streamer) {
+		return await prisma.streamer.create({
+			data: streamerToUpload,
+		});
+	}
+
+	private updateVoteCount(
+		current: Pick<Streamer, "downvotes" | "upvotes">,
+		voteType: "upvote" | "downvote"
+	): Pick<Streamer, "downvotes" | "upvotes"> {
+		const currentCopy = { ...current };
+
+		if (voteType === "upvote") {
+			currentCopy.upvotes += 1;
 		}
+
+		if (voteType === "downvote") {
+			currentCopy.downvotes += 1;
+		}
+
+		return currentCopy;
 	}
 
-	findOne() {
-		// placeholder
-	}
+	async vote(streamerId: Streamer["id"], voteType: "upvote" | "downvote") {
+		const streamerToModify = await this.findOne({ id: streamerId });
 
-	insert() {
-		// placeholder
-	}
+		if (!streamerToModify) {
+			return undefined;
+		}
 
-	modify() {
-		// placeholder
+		const newVoteCount = this.updateVoteCount(
+			{
+				downvotes: streamerToModify.downvotes,
+				upvotes: streamerToModify.upvotes,
+			},
+			voteType
+		);
+
+		await prisma.streamer.update({
+			where: {
+				id: streamerId,
+			},
+			data: newVoteCount,
+		});
 	}
 }
 
