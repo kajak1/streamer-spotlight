@@ -1,40 +1,41 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { streamersRepository } from "./streamers.repository";
 import "express-async-errors";
 import { Streamer } from "@prisma/client";
-import { PrismaError } from "../errors/PrismaError";
-import { HttpError } from "../errors/HttpError";
+import { ApplicationError } from "../errors/ApplicationError";
+import z from "zod";
+
+export const voteTypeSchema = z.object({
+	voteType: z.union([z.literal("upvote"), z.literal("downvote")]),
+});
+
+export const streamerIdSchema = z.object({
+	streamerId: z.string(),
+});
+
+type StreamerIdParam = z.infer<typeof streamerIdSchema>;
+type VoteTypeBody = z.infer<typeof voteTypeSchema>;
 
 class StreamersController {
 	constructor() {
-		// placeholder
+		// empty
 	}
 
-	async getAll(req: Request, res: Response) {
+	async getAll(req: Request, res: Response, next: NextFunction) {
 		const streamersRaw = await streamersRepository.findAll();
-
-		if (!streamersRaw) {
-			res.status(500);
-			throw new PrismaError("Failed to search for streamers");
-		}
 
 		res.status(200).json(streamersRaw);
 	}
 
-	async getSpecific(req: Request<{ streamerId: string }>, res: Response) {
+	async getSpecific(req: Request<StreamerIdParam>, res: Response) {
 		const { streamerId } = req.params;
-
-		if (!streamerId) {
-			throw new HttpError(400, "No id provided");
-		}
 
 		const streamerFoundRaw = await streamersRepository.findOne({
 			id: streamerId,
 		});
 
 		if (!streamerFoundRaw) {
-			res.status(404);
-			throw new PrismaError("No users found");
+			throw new ApplicationError("NOT_FOUND");
 		}
 
 		res.status(200).json({ streamer: streamerFoundRaw });
@@ -45,22 +46,15 @@ class StreamersController {
 
 		await streamersRepository.insert(streamerToUpload);
 
-		res.status(200).json({ msg: "streamer created successfully" });
+		res.status(200).json({ message: "streamer created successfully" });
 	}
 
 	async vote(
-		req: Request<
-			{ streamerId: string },
-			unknown,
-			{ voteType: "upvote" | "downvote" }
-		>,
+		req: Request<StreamerIdParam, unknown, VoteTypeBody>,
 		res: Response
 	) {
 		const { streamerId } = req.params;
 		const { voteType } = req.body;
-
-		if (!streamerId) throw new HttpError(400, "StramerId param is required");
-		if (!voteType) throw new HttpError(400, "VoteType in body is required");
 
 		const updatedStreamer = await streamersRepository.vote(
 			streamerId,
@@ -68,11 +62,11 @@ class StreamersController {
 		);
 
 		if (!updatedStreamer) {
-			res.status(500).json({ msg: "failed to vote" });
+			res.status(500).json({ message: "failed to vote" });
 			return;
 		}
 
-		res.status(200).json({ msg: "voted successfully" });
+		res.status(200).json({ message: "voted successfully" });
 	}
 }
 

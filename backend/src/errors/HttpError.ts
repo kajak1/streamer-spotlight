@@ -1,9 +1,8 @@
 import { CustomError, SerializedError } from "./CustomError";
+import { ErrorCodes } from "./errorCodes";
 
-class HttpError extends CustomError {
-	override name = "HttpError";
-
-	constructor(public code: number, message: string) {
+export class HttpError extends CustomError {
+	constructor(message: ErrorCodes) {
 		super(message);
 	}
 
@@ -13,5 +12,3 @@ class HttpError extends CustomError {
 		};
 	}
 }
-
-export { HttpError };

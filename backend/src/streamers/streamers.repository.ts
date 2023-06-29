@@ -1,30 +1,46 @@
 import { Prisma, Streamer } from "@prisma/client";
 import { prisma } from "../prisma";
 import "express-async-errors";
+import { ApplicationError } from "../errors/ApplicationError";
+import { PrismaError } from "../errors/PrismaError";
 
 class StreamersRepository {
 	constructor() {
-		// placeholder
+		// empty
 	}
 
 	async findAll() {
-		const allUsers = await prisma.streamer.findMany();
+		try {
+			const allUsers = await prisma.streamer.findMany();
 
-		return allUsers;
+			return allUsers;
+		} catch (e) {
+			throw new ApplicationError("NOT_FOUND", e);
+		}
 	}
 
 	async findOne(criteria: Prisma.StreamerWhereUniqueInput) {
-		const allUsers = await prisma.streamer.findUnique({
-			where: criteria,
-		});
+		try {
+			const allUsers = await prisma.streamer.findUnique({
+				where: criteria,
+			});
 
-		return allUsers;
+			return allUsers;
+		} catch (e) {
+			throw new ApplicationError("NOT_FOUND", e);
+		}
 	}
 
 	async insert(streamerToUpload: Streamer) {
-		return await prisma.streamer.create({
-			data: streamerToUpload,
-		});
+		try {
+			const createdStreamer = await prisma.streamer.create({
+				data: streamerToUpload,
+			});
+
+			return createdStreamer;
+		} catch (e) {
+			throw new PrismaError("INTERNAL_ERROR", e);
+		}
 	}
 
 	private updateVoteCount(
@@ -59,12 +75,18 @@ class StreamersRepository {
 			voteType
 		);
 
-		await prisma.streamer.update({
-			where: {
-				id: streamerId,
-			},
-			data: newVoteCount,
-		});
+		try {
+			const updatedStreamer = await prisma.streamer.update({
+				where: {
+					id: streamerId,
+				},
+				data: newVoteCount,
+			});
+
+			return updatedStreamer;
+		} catch (e) {
+			throw new PrismaError("INTERNAL_ERROR", e);
+		}
 	}
 }
 

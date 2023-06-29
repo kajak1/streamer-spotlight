@@ -1,8 +1,8 @@
 import { CustomError, SerializedError } from "./CustomError";
 import { ErrorCodes } from "./errorCodes";
 
-export class PrismaError extends CustomError {
-	constructor(message: ErrorCodes, baseError: unknown) {
+export class ApplicationError extends CustomError {
+	constructor(message: ErrorCodes, baseError?: unknown) {
 		super(message, baseError);
 	}
 
