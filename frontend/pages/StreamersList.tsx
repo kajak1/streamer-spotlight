@@ -1,20 +1,15 @@
-import { StreamerCard } from "./StreamerCard";
+import { ReactNode } from "react";
 
-interface Props {}
+interface Props {
+	children: ReactNode;
+}
 
-function StreamersList(): JSX.Element {
+function StreamersList({ children }: Props): JSX.Element {
 	return (
-		<ul>
-			<li>
-				<StreamerCard />
-			</li>
-			<li>
-				<StreamerCard />
-			</li>
-			<li>
-				<StreamerCard />
-			</li>
-		</ul>
+		<article className="w-full py-8">
+			<h2 className="text-xl pb-4">Streamers:</h2>
+			<ul>{children}</ul>
+		</article>
 	);
 }
 

@@ -1,26 +1,26 @@
 import { ChangeEvent, FormEvent, useState } from "react";
 import { z } from "zod";
-import useSWRMutation from "swr/mutation";
-
-interface Props {}
+import useSWR from "swr";
+import { Streamer } from ".";
+import { streamersService } from "../services/streamersService";
 
 const FormSchema = z.object({
-	name: z.string(),
-	platform: z.union([z.literal("Twitch"), z.literal("Kick")]),
-	description: z.string(),
+	name: z.string().nonempty(),
+	platform: z.union([
+		z.literal("Twitch"),
+		z.literal("Kick"),
+		z.literal("YouTube"),
+		z.literal("TikTok"),
+		z.literal("Rumble"),
+	]),
+	description: z.string().nonempty(),
 });
 
-type FormSchema = z.infer<typeof FormSchema>;
+export type FormSchema = z.infer<typeof FormSchema>;
 
 function validate(formData: FormSchema) {
 	FormSchema.parse(formData);
 }
-
-const sendRequest = (url: string, { arg }: { arg: FormSchema }) =>
-	fetch(url, {
-		method: "POST",
-		body: JSON.stringify(arg),
-	}).then((res) => res.json());
 
 function StreamerForm(): JSX.Element {
 	const [formValues, setFormValues] = useState<FormSchema>({
@@ -29,17 +29,18 @@ function StreamerForm(): JSX.Element {
 		description: "",
 	});
 
-	const { trigger, isMutating } = useSWRMutation(
-		"http://localhost:3001/streamers",
-		sendRequest
-	);
+	const { isLoading, mutate } = useSWR<Streamer[]>("all");
 
 	async function handleSubmit(e: FormEvent) {
 		e.preventDefault();
 
-		console.log(formValues);
-		validate(formValues);
-		await trigger(formValues);
+		try {
+			validate(formValues);
+			await streamersService.create({ streamerData: formValues });
+			mutate();
+		} catch (e) {
+			console.error(e);
+		}
 	}
 
 	function handleChange(fieldName: keyof FormSchema) {
@@ -70,6 +71,9 @@ function StreamerForm(): JSX.Element {
 				>
 					<option value="Twitch">Twitch</option>
 					<option value="Kick">Kick</option>
+					<option value="YouTube">YouTube</option>
+					<option value="TikTok">TikTok</option>
+					<option value="Rumble">Rumble</option>
 				</select>
 			</div>
 			<div className="py-1">
@@ -82,7 +86,7 @@ function StreamerForm(): JSX.Element {
 			</div>
 
 			<button
-				disabled={isMutating}
+				disabled={isLoading}
 				onClick={handleSubmit}
 				className="b-2 bg-indigo-500 rounded-md py-1 px-3"
 			>
