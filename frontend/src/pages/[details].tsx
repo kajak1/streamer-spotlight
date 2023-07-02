@@ -1,9 +1,6 @@
-import { streamersService } from "@/src/services/streamers.service";
-import { useRouter } from "next/router";
-import useSWR from "swr";
-import { useRandomImage } from "../hooks/useRandomImage";
 import Image from "next/image";
-import { Streamer } from "../shared.types";
+import { useRouter } from "next/router";
+import { useRandomImage } from "../hooks/useRandomImage";
 import { useStreamer } from "../hooks/useStreamer";
 
 export default function StreamerDetails(): JSX.Element {

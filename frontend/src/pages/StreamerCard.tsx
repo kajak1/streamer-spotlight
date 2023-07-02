@@ -9,7 +9,6 @@ import { streamersService } from "../services/streamers.service";
 import type { Streamer, Vote } from "../shared.types";
 import { socket } from "../socket";
 import { EVENTS } from "../websocket.config";
-import router from "next/router";
 
 type Props = Pick<Streamer, "id">;
 
@@ -46,24 +45,32 @@ function StreamerCard({ id }: Props): JSX.Element {
 					fill
 				/>
 			</div>
-			<div className="flex-1 flex flex-col justify-evenly">
-				<h3 className="text-center text-xl">{streamerData.name}</h3>
-				<div className="flex flex-row justify-evenly ">
+			<div className="flex-1 flex flex-col justify-evenly sm:flex-row sm:justify-between sm:items-center">
+				<h3 className="text-center text-xl sm:text-left break-all sm:w-1/3">
+					{streamerData.name}
+				</h3>
+				<div className="flex flex-row justify-end gap-4 sm:w-2/3">
 					<span>
-						<button className="text-xl" onClick={handleVote("upvote")}>
+						<button
+							className="text-lg sm:text-xl"
+							onClick={handleVote("upvote")}
+						>
 							<FontAwesomeIcon icon={faHeart} className=" text-red-600 " />
 							&nbsp;{streamerData.upvotes}
 						</button>
 					</span>
 					<span>
-						<button className="text-xl" onClick={handleVote("downvote")}>
+						<button
+							className="text-lg sm:text-xl"
+							onClick={handleVote("downvote")}
+						>
 							<FontAwesomeIcon icon={faThumbsDown} />
 							&nbsp;{streamerData.downvotes}
 						</button>
 					</span>
 					<Link
 						href={`/${encodeURIComponent(id)}`}
-						className="border-1 p-1 rounded-md border-gray-300 hover:bg-gray-300 bg-gray-200 dark:bg-blue-800 dark:hover:bg-blue-900 dark:border-blue-700"
+						className="h-fit border-1 p-1 rounded-md border-gray-300 hover:bg-gray-300 bg-gray-200 dark:bg-blue-800 dark:hover:bg-blue-900 dark:border-blue-700"
 					>
 						See details
 					</Link>

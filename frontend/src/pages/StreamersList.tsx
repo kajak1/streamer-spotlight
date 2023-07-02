@@ -1,11 +1,11 @@
 import { useEffect } from "react";
+import { toast } from "react-hot-toast";
 import { mutate } from "swr";
 import { useStreamers } from "../hooks/useStreamers";
 import type { Streamer } from "../shared.types";
 import { socket } from "../socket";
 import { EVENTS } from "../websocket.config";
 import { StreamerCard } from "./StreamerCard";
-import { toast } from "react-hot-toast";
 
 type UpdatedStreamer = Pick<Streamer, "id" | "upvotes" | "downvotes">;
 

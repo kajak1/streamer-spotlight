@@ -1,11 +1,11 @@
 import { StreamerFormSchema, type StreamerForm } from "../shared.types";
 
-import { streamersService } from "../services/streamers.service";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FieldError } from "../components/FieldError";
 import { AxiosError } from "axios";
+import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
+import { FieldError } from "../components/FieldError";
+import { streamersService } from "../services/streamers.service";
 import { socket } from "../socket";
 import { EVENTS } from "../websocket.config";
 
