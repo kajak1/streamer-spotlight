@@ -17,7 +17,7 @@ export default function Home() {
 				onRequestClose={handleCloseModal}
 				shouldCloseOnOverlayClick
 			>
-				<div className="w-full sm:w-1/2 h-fit bg-slate-100 dark:bg-gray-900 p-4 rounded-md relative">
+				<div className="w-full sm:w-1/2 h-fit bg-slate-100 dark:bg-gray-800 p-4 rounded-md relative">
 					<div className="w-full h-fit">
 						<Modal.Close
 							onClose={handleCloseModal}

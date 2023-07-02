@@ -1,11 +1,10 @@
-import { StreamerFormSchema, type StreamerForm } from "../shared.types";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AxiosError } from "axios";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { FieldError } from "../components/FieldError";
 import { streamersService } from "../services/streamers.service";
+import { StreamerFormSchema, type StreamerForm } from "../shared.types";
 import { socket } from "../socket";
 import { EVENTS } from "../websocket.config";
 
@@ -59,7 +58,7 @@ function StreamerForm(props: Props): JSX.Element {
 	return (
 		<form
 			onSubmit={handleSubmit(onSubmit)}
-			className="dark:text-gray-200 dark:bg-gray-900"
+			className="dark:text-gray-200 dark:bg-gray-800"
 		>
 			<h3 className="pb-4 text-xl">Upload</h3>
 			<p className="pb-2">Share your favourite streamer with others!</p>

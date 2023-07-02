@@ -23,7 +23,7 @@ function Close({ onClose, className }: CloseProps): JSX.Element {
 function Modal({ children, ...rest }: Props) {
 	return (
 		<ReactModal
-			className="w-full lg:aspect-square lg:w-3/6 lg:h-auto p-4 grid place-items-center"
+			className="w-full lg:aspect-square lg:w-3/6 lg:h-auto p-4 grid place-items-center "
 			overlayClassName="fixed inset-0 bg-gray-500/50 dark:bg-gray-900/50 grid place-items-center "
 			{...rest}
 		>
