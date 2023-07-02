@@ -1,9 +1,11 @@
 import { NextFunction, Request, Response } from "express";
 import { streamersRepository } from "./streamers.repository";
 import "express-async-errors";
-import { Streamer } from "@prisma/client";
 import { ApplicationError } from "../errors/ApplicationError";
 import z from "zod";
+import { StreamerFormData } from "../schemas";
+import { io } from "..";
+import { SOCKET_EVENTS } from "../socket";
 
 export const voteTypeSchema = z.object({
 	voteType: z.union([z.literal("upvote"), z.literal("downvote")]),
@@ -21,11 +23,11 @@ class StreamersController {
 		// empty
 	}
 
-	async getAll(req: Request, res: Response, next: NextFunction) {
+	getAll = async (req: Request, res: Response, next: NextFunction) => {
 		const streamersRaw = await streamersRepository.findAll();
 
 		res.status(200).json(streamersRaw);
-	}
+	};
 
 	async getSpecific(req: Request<StreamerIdParam>, res: Response) {
 		const { streamerId } = req.params;
@@ -38,15 +40,19 @@ class StreamersController {
 			throw new ApplicationError("NOT_FOUND");
 		}
 
-		res.status(200).json({ streamer: streamerFoundRaw });
+		res.status(200).json(streamerFoundRaw);
 	}
 
-	async upload(req: Request<unknown, unknown, Streamer>, res: Response) {
+	async upload(
+		req: Request<unknown, unknown, StreamerFormData>,
+		res: Response
+	) {
 		const streamerToUpload = req.body;
 
-		await streamersRepository.insert(streamerToUpload);
+		const createdStreamer = await streamersRepository.insert(streamerToUpload);
 
-		res.status(200).json({ message: "streamer created successfully" });
+		io.emit(SOCKET_EVENTS.STREAMER_ADDED, createdStreamer);
+		res.status(200).json(createdStreamer);
 	}
 
 	async vote(
@@ -66,6 +72,11 @@ class StreamersController {
 			return;
 		}
 
+		io.emit(SOCKET_EVENTS.STREAMER_ADDED, {
+			id: updatedStreamer.id,
+			upvotes: updatedStreamer.upvotes,
+			downvotes: updatedStreamer.downvotes,
+		});
 		res.status(200).json({ message: "voted successfully" });
 	}
 }

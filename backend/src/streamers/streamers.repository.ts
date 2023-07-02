@@ -3,13 +3,16 @@ import { prisma } from "../prisma";
 import "express-async-errors";
 import { ApplicationError } from "../errors/ApplicationError";
 import { PrismaError } from "../errors/PrismaError";
+import { StreamerFormData } from "../schemas";
+
+type FindAllReturn = ReturnType<(typeof prisma)["streamer"]["findMany"]>;
 
 class StreamersRepository {
 	constructor() {
 		// empty
 	}
 
-	async findAll() {
+	async findAll(): Promise<FindAllReturn> {
 		try {
 			const allUsers = await prisma.streamer.findMany();
 
@@ -31,14 +34,19 @@ class StreamersRepository {
 		}
 	}
 
-	async insert(streamerToUpload: Streamer) {
+	async insert(streamerToUpload: StreamerFormData) {
 		try {
 			const createdStreamer = await prisma.streamer.create({
-				data: streamerToUpload,
+				data: {
+					name: streamerToUpload.name,
+					platform: streamerToUpload.platform,
+					description: streamerToUpload.description,
+				},
 			});
 
 			return createdStreamer;
 		} catch (e) {
+			console.log(e);
 			throw new PrismaError("INTERNAL_ERROR", e);
 		}
 	}

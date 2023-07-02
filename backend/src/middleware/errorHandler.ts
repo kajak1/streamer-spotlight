@@ -31,8 +31,9 @@ export function errorHandler(
 		}
 		if (err.baseError instanceof Prisma.PrismaClientValidationError) {
 			const code = 400;
-			const message = "";
-			return res.status(code).json({ error: { message } });
+			return res
+				.status(code)
+				.json({ error: { message: err.baseError.message } });
 		}
 	}
 	if (err instanceof CustomError) {

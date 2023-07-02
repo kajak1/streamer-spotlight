@@ -4,8 +4,8 @@ import {
 	streamersController,
 	voteTypeSchema,
 } from "./streamers.controller";
-import { StreamerSchema } from "../../prisma/generated/zod";
 import { validateBody, validateParams } from "../middleware/validate";
+import { StreamerFormData } from "../schemas";
 
 const streamersRouter = express.Router();
 
@@ -21,7 +21,7 @@ streamersRouter.get(
 
 streamersRouter.post(
 	`${BASE_URL}`,
-	validateBody(StreamerSchema),
+	validateBody(StreamerFormData),
 	streamersController.upload
 );
 
