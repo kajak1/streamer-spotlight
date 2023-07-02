@@ -1,28 +1,24 @@
-import { describe } from "mocha";
+import { Streamer } from "@prisma/client";
+import { expect } from "chai";
+import { beforeEach, describe } from "mocha";
 import supertest from "supertest";
 import cleanDb from "./clean-db";
-import seedDb from "./seed-db";
-import { expect } from "chai";
 import { user101 } from "./sample-data";
-import { Streamer } from "@prisma/client";
+import seedDb from "./seed-db";
 
 describe("Streamers", () => {
 	let host: ReturnType<typeof supertest>;
 
-	before(async () => {
+	beforeEach(async () => {
 		host = supertest("http://localhost:3001");
 		await seedDb();
 	});
 
-	after(async () => {
+	afterEach(async () => {
 		await cleanDb();
 	});
 
 	describe("GET /streamers", () => {
-		after(async () => {
-			await cleanDb();
-		});
-
 		it("WHEN database is empty and THEN res code 404", async () => {
 			await cleanDb();
 

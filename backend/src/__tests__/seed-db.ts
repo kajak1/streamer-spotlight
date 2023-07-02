@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 export default async () => {
 	await prisma.$transaction([
-		prisma.streamer.create({
+		prisma.test_Streamer.create({
 			data: { ...user101 },
 		}),
 	]);

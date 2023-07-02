@@ -6,6 +6,5 @@ export const user101: Streamer = {
 	description: "lorem impsum",
 	downvotes: 0,
 	upvotes: 0,
-	image: "base64",
-	platform: "twitch",
+	platform: "Twitch",
 };

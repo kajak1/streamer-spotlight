@@ -1,22 +1,9 @@
 import { NextFunction, Request, Response } from "express";
-import { streamersRepository } from "./streamers.repository";
 import "express-async-errors";
+import { logger } from "../../logger";
 import { ApplicationError } from "../errors/ApplicationError";
-import z from "zod";
-import { StreamerFormData } from "../schemas";
-import { io } from "..";
-import { SOCKET_EVENTS } from "../socket";
-
-export const voteTypeSchema = z.object({
-	voteType: z.union([z.literal("upvote"), z.literal("downvote")]),
-});
-
-export const streamerIdSchema = z.object({
-	streamerId: z.string(),
-});
-
-type StreamerIdParam = z.infer<typeof streamerIdSchema>;
-type VoteTypeBody = z.infer<typeof voteTypeSchema>;
+import { StreamerForm, StreamerIdParam, VoteTypeBody } from "../shared.types";
+import { streamersRepository } from "./streamers.repository";
 
 class StreamersController {
 	constructor() {
@@ -43,15 +30,15 @@ class StreamersController {
 		res.status(200).json(streamerFoundRaw);
 	}
 
-	async upload(
-		req: Request<unknown, unknown, StreamerFormData>,
-		res: Response
-	) {
+	async upload(req: Request<unknown, unknown, StreamerForm>, res: Response) {
 		const streamerToUpload = req.body;
 
 		const createdStreamer = await streamersRepository.insert(streamerToUpload);
+		logger.info(
+			`Created streamer ${createdStreamer.name} #${createdStreamer.id}`
+		);
 
-		io.emit(SOCKET_EVENTS.STREAMER_ADDED, createdStreamer);
+		// io.emit(EVENTS.STREAMER_ADDED, createdStreamer);
 		res.status(200).json(createdStreamer);
 	}
 
@@ -72,11 +59,12 @@ class StreamersController {
 			return;
 		}
 
-		io.emit(SOCKET_EVENTS.STREAMER_ADDED, {
-			id: updatedStreamer.id,
-			upvotes: updatedStreamer.upvotes,
-			downvotes: updatedStreamer.downvotes,
-		});
+		// io.emit(EVENTS.VOTE, {
+		// 	id: updatedStreamer.id,
+		// 	upvotes: updatedStreamer.upvotes,
+		// 	downvotes: updatedStreamer.downvotes,
+		// });
+
 		res.status(200).json({ message: "voted successfully" });
 	}
 }

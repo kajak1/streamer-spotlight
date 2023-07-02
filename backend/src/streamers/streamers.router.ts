@@ -1,11 +1,11 @@
 import express from "express";
-import {
-	streamerIdSchema,
-	streamersController,
-	voteTypeSchema,
-} from "./streamers.controller";
+import { streamersController } from "./streamers.controller";
 import { validateBody, validateParams } from "../middleware/validate";
-import { StreamerFormData } from "../schemas";
+import {
+	StreamerFormSchema,
+	streamerIdSchema,
+	voteTypeSchema,
+} from "../shared.types";
 
 const streamersRouter = express.Router();
 
@@ -21,7 +21,7 @@ streamersRouter.get(
 
 streamersRouter.post(
 	`${BASE_URL}`,
-	validateBody(StreamerFormData),
+	validateBody(StreamerFormSchema),
 	streamersController.upload
 );
 

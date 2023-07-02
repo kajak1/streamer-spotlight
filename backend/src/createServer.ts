@@ -4,6 +4,7 @@ import { streamersRouter } from "./streamers/streamers.router";
 import { errorHandler } from "./middleware/errorHandler";
 import bodyParser from "body-parser";
 import { errorLogger } from "./middleware/errorLogger";
+import { requestLogger } from "./middleware/requestLogger";
 
 export function createServer() {
 	const app = express();
@@ -11,6 +12,7 @@ export function createServer() {
 	app.use(cors({ origin: "http://localhost:3000" }));
 
 	app.use(bodyParser.json());
+	app.use(requestLogger);
 
 	app.use(streamersRouter);
 

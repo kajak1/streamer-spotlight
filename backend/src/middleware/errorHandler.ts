@@ -1,34 +1,19 @@
-import { NextFunction, Request, Response } from "express";
-import { ApplicationError } from "../errors/ApplicationError";
-import { CustomError } from "../errors/CustomError";
-import { errorCodes } from "../errors/errorCodes";
-import { PrismaError } from "../errors/PrismaError";
 import { Prisma } from "@prisma/client";
+import { NextFunction, Request, Response } from "express";
 import { ValidationError } from "zod-validation-error";
+import { ApplicationError } from "../errors/ApplicationError";
+import { errorCodes } from "../errors/errorCodes";
 
-// TODO refactor
+function handleApplicationError(res: Response, err: ApplicationError) {
+	if (err.baseError instanceof Prisma.PrismaClientKnownRequestError) {
+		if (err.baseError.code === "P2002") {
+			const errorType = errorCodes["NAME_ALREADY_EXISTS"];
 
-export function errorHandler(
-	err: Error,
-	req: Request,
-	res: Response,
-	next: NextFunction
-) {
-	if (err instanceof ValidationError) {
-		return res.status(400).json({ error: { message: err.message } });
-	}
-
-	const isCustomError = err instanceof CustomError;
-
-	if (err instanceof PrismaError) {
-		if (err.baseError instanceof Prisma.PrismaClientKnownRequestError) {
-			if (err.baseError.code === "P2002") {
-				const code = 400;
-				const message =
-					"There is a unique constraint violation, a new streamer cannot be created with this name";
-				return res.status(code).json({ error: { message } });
-			}
+			return res
+				.status(errorType.code)
+				.json({ error: { message: errorType.message } });
 		}
+
 		if (err.baseError instanceof Prisma.PrismaClientValidationError) {
 			const code = 400;
 			return res
@@ -36,20 +21,35 @@ export function errorHandler(
 				.json({ error: { message: err.baseError.message } });
 		}
 	}
-	if (err instanceof CustomError) {
-		const code = errorCodes[err.message].code;
-		const message = errorCodes[err.message].message;
-		return res.status(code).json({ error: { message } });
-	}
 
-	if (!isCustomError)
-		return res.status(500).json({ error: { message: "Server fault" } });
+	const errorType = errorCodes[err.message] || errorCodes["UNKNOWN_ERROR"];
 
-	if (err instanceof ApplicationError) {
-		return res.status(404).json({ error: err.serialize() });
-	}
+	const code = errorType.code;
+	const message = errorType.message;
 
-	// if (err instanceof HttpError) {
-	// 	return res.status(err.code || 500).json({ error: err.serialize() });
-	// }
+	return res.status(code).json({ error: { message } });
+}
+
+function handleValidationError(res: Response, err: ValidationError) {
+	return res.status(400).json({ error: { message: err.message } });
+}
+
+export function errorHandler(
+	err: Error,
+	req: Request,
+	res: Response,
+	next: NextFunction
+) {
+	const isApplicationError = err instanceof ApplicationError;
+	const isValidationError = err instanceof ValidationError;
+
+	if (isValidationError) return handleValidationError(res, err);
+
+	if (isApplicationError) return handleApplicationError(res, err);
+
+	const unknownError = errorCodes["UNKNOWN_ERROR"];
+
+	return res
+		.status(unknownError.code)
+		.json({ error: { message: unknownError.message } });
 }

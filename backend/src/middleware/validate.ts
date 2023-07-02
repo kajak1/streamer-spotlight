@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from "express";
-import { ZodType, ZodError, AnyZodObject } from "zod";
+import { AnyZodObject, ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
 
-export function validateBody(schema: ZodType) {
+export function validateBody(schema: AnyZodObject) {
 	return function validatorMiddleware(
 		req: Request,
 		res: Response,

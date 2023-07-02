@@ -1,8 +1,9 @@
 export type ErrorCodes =
-	| "INTERNAL_ERROR"
+	| "UNKNOWN_ERROR"
 	| "NOT_FOUND"
 	| "MISSING_PARAMETERS"
-	| "MISSING_BODY";
+	| "MISSING_BODY"
+	| "NAME_ALREADY_EXISTS";
 
 type ErrorCodesMap = {
 	[ErrorTag in ErrorCodes]: {
@@ -12,7 +13,7 @@ type ErrorCodesMap = {
 };
 
 export const errorCodes: ErrorCodesMap = {
-	INTERNAL_ERROR: {
+	UNKNOWN_ERROR: {
 		code: 500,
 		message: "Internal server error",
 	},
@@ -27,5 +28,9 @@ export const errorCodes: ErrorCodesMap = {
 	MISSING_BODY: {
 		code: 400,
 		message: "Missing body",
+	},
+	NAME_ALREADY_EXISTS: {
+		code: 400,
+		message: "Streamer with this name already exists",
 	},
 };

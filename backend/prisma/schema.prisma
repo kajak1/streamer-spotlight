@@ -11,10 +11,19 @@ datasource db {
 }
 
 model Streamer {
-  id          String @id @default(uuid())
-  name        String @unique
-  description String
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String?
   platform    String
-  upvotes     Int    @default(0)
-  downvotes   Int    @default(0)
+  upvotes     Int     @default(0)
+  downvotes   Int     @default(0)
+}
+
+model test_Streamer {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String?
+  platform    String
+  upvotes     Int     @default(0)
+  downvotes   Int     @default(0)
 }
