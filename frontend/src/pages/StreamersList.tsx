@@ -5,7 +5,7 @@ import { useStreamers } from "../hooks/useStreamers";
 import type { Streamer } from "../shared.types";
 import { socket } from "../socket";
 import { EVENTS } from "../websocket.config";
-import { StreamerCard } from "./StreamerCard";
+import StreamerCard from "./StreamerCard";
 
 type UpdatedStreamer = Pick<Streamer, "id" | "upvotes" | "downvotes">;
 
@@ -79,4 +79,4 @@ function StreamersList(): JSX.Element {
 	);
 }
 
-export { StreamersList };
+export default StreamersList;

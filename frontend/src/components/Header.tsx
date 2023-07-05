@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ThemeSwitch } from "./ThemeSwitch";
 
 function Header(): JSX.Element {
 	return (
@@ -6,9 +7,12 @@ function Header(): JSX.Element {
 			<h1 className="text-2xl w-2/6 md:w-auto lg:text-3xl">
 				Streamer Spotlight
 			</h1>
-			<nav className="pl-4 md:pl-8 hover:text-blue-700">
-				<Link href="/">All streamers</Link>
+			<nav className="pl-4 md:pl-8 flex-1">
+				<Link href="/" className="hover:text-blue-500 dark:hover:text-blue-500">
+					All streamers
+				</Link>
 			</nav>
+			<ThemeSwitch />
 		</header>
 	);
 }

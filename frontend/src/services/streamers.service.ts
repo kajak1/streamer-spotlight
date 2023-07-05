@@ -1,6 +1,5 @@
 import axios, { AxiosInstance } from "axios";
-import { StreamerForm } from "../pages/StreamerForm";
-import { Streamer, Vote } from "../shared.types";
+import { Streamer, StreamerForm, Vote } from "../shared.types";
 
 interface VoteProps {
 	id: string;

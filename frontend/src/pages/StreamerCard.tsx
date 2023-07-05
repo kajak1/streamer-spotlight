@@ -80,4 +80,4 @@ function StreamerCard({ id }: Props): JSX.Element {
 	);
 }
 
-export { StreamerCard };
+export default StreamerCard;

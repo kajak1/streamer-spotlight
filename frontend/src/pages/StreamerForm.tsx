@@ -121,4 +121,4 @@ function StreamerForm(props: Props): JSX.Element {
 	);
 }
 
-export { StreamerForm };
+export default StreamerForm;

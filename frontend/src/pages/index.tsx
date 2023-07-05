@@ -1,8 +1,8 @@
 import { CreateStreamerButton } from "../components/CreateStreamerButton";
 import { Modal } from "../components/Modal";
 import { useModal } from "../hooks/useModal";
-import { StreamerForm } from "./StreamerForm";
-import { StreamersList } from "./StreamersList";
+import StreamerForm from "./StreamerForm";
+import StreamersList from "./StreamersList";
 
 export default function Home() {
 	const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
