@@ -10,11 +10,16 @@ class StreamersController {
 		// empty
 	}
 
-	getAll = async (req: Request, res: Response, next: NextFunction) => {
+	async getAll(req: Request, res: Response, next: NextFunction) {
 		const streamersRaw = await streamersRepository.findAll();
 
+		if (streamersRaw.length === 0) {
+			console.log("zero");
+			throw new ApplicationError("NOT_FOUND");
+		}
+
 		res.status(200).json(streamersRaw);
-	};
+	}
 
 	async getSpecific(req: Request<StreamerIdParam>, res: Response) {
 		const { streamerId } = req.params;
@@ -38,7 +43,6 @@ class StreamersController {
 			`Created streamer ${createdStreamer.name} #${createdStreamer.id}`
 		);
 
-		// io.emit(EVENTS.STREAMER_ADDED, createdStreamer);
 		res.status(200).json(createdStreamer);
 	}
 
@@ -58,12 +62,6 @@ class StreamersController {
 			res.status(500).json({ message: "failed to vote" });
 			return;
 		}
-
-		// io.emit(EVENTS.VOTE, {
-		// 	id: updatedStreamer.id,
-		// 	upvotes: updatedStreamer.upvotes,
-		// 	downvotes: updatedStreamer.downvotes,
-		// });
 
 		res.status(200).json({ message: "voted successfully" });
 	}

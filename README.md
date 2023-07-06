@@ -9,3 +9,11 @@ In order to run this app, following steps are required:
 
 Open browser and go to http://localhost:3000
 
+### Tests
+
+To run e2e tests:
+
+- cd /backend
+- npm run test-server - 1st terminal window
+- npm run test - 2nd terminal window
+
