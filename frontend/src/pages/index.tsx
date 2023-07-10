@@ -13,8 +13,8 @@ export default function Home() {
 			<StreamersList />
 			<Modal
 				isOpen={isModalOpen}
-				shouldCloseOnEsc
 				onRequestClose={handleCloseModal}
+				shouldCloseOnEsc
 				shouldCloseOnOverlayClick
 			>
 				<div className="w-full sm:w-1/2 h-fit bg-slate-100 dark:bg-gray-800 p-4 rounded-md relative">
