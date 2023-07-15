@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import "express-async-errors";
-import { logger } from "../../logger";
+import { logger } from "../logger";
 import { ApplicationError } from "../errors/ApplicationError";
 import { StreamerForm, StreamerIdParam, VoteTypeBody } from "../shared.types";
 import { streamersRepository } from "./streamers.repository";
@@ -12,11 +12,6 @@ class StreamersController {
 
 	async getAll(req: Request, res: Response, next: NextFunction) {
 		const streamersRaw = await streamersRepository.findAll();
-
-		if (streamersRaw.length === 0) {
-			console.log("zero");
-			throw new ApplicationError("NOT_FOUND");
-		}
 
 		res.status(200).json(streamersRaw);
 	}

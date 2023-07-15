@@ -8,7 +8,7 @@ export const EVENTS = {
 	VOTE: "VOTE",
 } as const;
 
-export function createSocketServer(httpServer: http.Server) {
+export function createWebsocketServer(httpServer: http.Server) {
 	const io = new Server(httpServer, {
 		cors: {
 			origin: "http://localhost:3000",
