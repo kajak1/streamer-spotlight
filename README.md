@@ -1,4 +1,4 @@
-## For the most recent version check out the dev branch
+# ❗ For the most recent version check out the dev branch
 
 ## How to run
 
