@@ -17,3 +17,6 @@ To run e2e tests:
 - npm run test-server - 1st terminal window
 - npm run test - 2nd terminal window
 
+### Preview
+https://github.com/kajak1/streamer-spotlight/assets/47481020/50302514-e152-43d6-a11a-f2f1ffc525b5
+
