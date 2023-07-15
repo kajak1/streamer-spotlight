@@ -7,7 +7,7 @@ import { toast } from "react-hot-toast";
 import { useRandomImage } from "../hooks/useRandomImage";
 import { streamersService } from "../services/streamers.service";
 import type { Streamer, Vote } from "../shared.types";
-import { socket } from "../socket";
+import { ServerToClientEvents, socket } from "../socket";
 import { EVENTS } from "../websocket.config";
 import { useEffect, useState } from "react";
 
@@ -17,8 +17,6 @@ interface Props {
 	initialUpvotes: Streamer["upvotes"];
 	initialDownvotes: Streamer["downvotes"];
 }
-
-type UpdatedStreamer = Pick<Streamer, "id" | "upvotes" | "downvotes">;
 
 function StreamerCard({
 	id,
@@ -34,7 +32,7 @@ function StreamerCard({
 	const { data: image } = useRandomImage(name);
 
 	useEffect(() => {
-		function voteHandler(updated: UpdatedStreamer) {
+		const voteHandler: ServerToClientEvents["VOTE"] = (updated) => {
 			if (updated.id !== id) return;
 
 			setVotes({
@@ -42,7 +40,7 @@ function StreamerCard({
 				upvotes: updated.upvotes,
 				downvotes: updated.downvotes,
 			});
-		}
+		};
 
 		socket.on(EVENTS.VOTE, voteHandler);
 

@@ -1,4 +1,3 @@
-import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { mutate } from "swr";
 import { useStreamers } from "../hooks/useStreamers";
@@ -8,7 +7,6 @@ import { EVENTS } from "../websocket.config";
 import StreamerCard from "./StreamerCard";
 
 function StreamersList(): JSX.Element {
-	const router = useRouter();
 	const { streamers, error } = useStreamers();
 
 	useEffect(() => {
@@ -26,7 +24,7 @@ function StreamersList(): JSX.Element {
 
 			socket.disconnect();
 		};
-	}, [streamers, router]);
+	}, [streamers]);
 
 	if (error || typeof streamers === "undefined")
 		return <div>Failed to load</div>;

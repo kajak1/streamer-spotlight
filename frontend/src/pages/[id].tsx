@@ -1,6 +1,8 @@
 import type {
+	GetServerSideProps,
 	GetStaticPaths,
 	GetStaticProps,
+	InferGetServerSidePropsType,
 	InferGetStaticPropsType,
 } from "next";
 import Image from "next/image";
@@ -11,17 +13,15 @@ import { Streamer } from "../shared.types";
 export const getStaticPaths: GetStaticPaths = async () => {
 	const streamers = await streamersService.getAll();
 
-	const paths = streamers.map(({ id }) => {
+	const ids = streamers.map(({ id }) => {
 		return {
-			params: {
-				id,
-			},
+			params: { id },
 		};
 	});
 
 	return {
-		paths,
-		fallback: false,
+		paths: ids,
+		fallback: "blocking",
 	};
 };
 
@@ -41,6 +41,7 @@ export const getStaticProps: GetStaticProps<
 		props: {
 			streamer,
 		},
+		revalidate: 30,
 	};
 };
 
