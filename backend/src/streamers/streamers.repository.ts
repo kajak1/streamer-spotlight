@@ -9,7 +9,7 @@ class StreamersRepository {
 		// empty
 	}
 
-	async findAll() {
+	async findAll(): Promise<Streamer[]> {
 		try {
 			const allUsers = await prisma.streamer.findMany();
 
@@ -19,19 +19,21 @@ class StreamersRepository {
 		}
 	}
 
-	async findOne(criteria: Prisma.StreamerWhereUniqueInput) {
+	async findOne(
+		criteria: Prisma.StreamerWhereUniqueInput
+	): Promise<Streamer | null> {
 		try {
-			const allUsers = await prisma.streamer.findUnique({
+			const foundUser = await prisma.streamer.findUnique({
 				where: criteria,
 			});
 
-			return allUsers;
+			return foundUser;
 		} catch (e) {
 			throw new ApplicationError("NOT_FOUND", e);
 		}
 	}
 
-	async insert(streamerToUpload: StreamerForm) {
+	async insert(streamerToUpload: StreamerForm): Promise<Streamer> {
 		try {
 			const createdStreamer = await prisma.streamer.create({
 				data: {
@@ -64,7 +66,10 @@ class StreamersRepository {
 		return currentCopy;
 	}
 
-	async vote(streamerId: Streamer["id"], voteType: "upvote" | "downvote") {
+	async vote(
+		streamerId: Streamer["id"],
+		voteType: "upvote" | "downvote"
+	): Promise<Streamer> {
 		const streamerToModify = await this.findOne({ id: streamerId });
 
 		if (!streamerToModify) {

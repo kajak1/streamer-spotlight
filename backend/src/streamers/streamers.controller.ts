@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import "express-async-errors";
-import { logger } from "../../logger";
+import { logger } from "../logger";
 import { ApplicationError } from "../errors/ApplicationError";
 import { StreamerForm, StreamerIdParam, VoteTypeBody } from "../shared.types";
 import { streamersRepository } from "./streamers.repository";
@@ -10,11 +10,11 @@ class StreamersController {
 		// empty
 	}
 
-	getAll = async (req: Request, res: Response, next: NextFunction) => {
+	async getAll(req: Request, res: Response, next: NextFunction) {
 		const streamersRaw = await streamersRepository.findAll();
 
 		res.status(200).json(streamersRaw);
-	};
+	}
 
 	async getSpecific(req: Request<StreamerIdParam>, res: Response) {
 		const { streamerId } = req.params;
@@ -38,7 +38,6 @@ class StreamersController {
 			`Created streamer ${createdStreamer.name} #${createdStreamer.id}`
 		);
 
-		// io.emit(EVENTS.STREAMER_ADDED, createdStreamer);
 		res.status(200).json(createdStreamer);
 	}
 
@@ -58,12 +57,6 @@ class StreamersController {
 			res.status(500).json({ message: "failed to vote" });
 			return;
 		}
-
-		// io.emit(EVENTS.VOTE, {
-		// 	id: updatedStreamer.id,
-		// 	upvotes: updatedStreamer.upvotes,
-		// 	downvotes: updatedStreamer.downvotes,
-		// });
 
 		res.status(200).json({ message: "voted successfully" });
 	}

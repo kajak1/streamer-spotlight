@@ -1,8 +1,8 @@
 import { CreateStreamerButton } from "../components/CreateStreamerButton";
 import { Modal } from "../components/Modal";
 import { useModal } from "../hooks/useModal";
-import { StreamerForm } from "./StreamerForm";
-import { StreamersList } from "./StreamersList";
+import StreamerForm from "./StreamerForm";
+import StreamersList from "./StreamersList";
 
 export default function Home() {
 	const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
@@ -13,8 +13,8 @@ export default function Home() {
 			<StreamersList />
 			<Modal
 				isOpen={isModalOpen}
-				shouldCloseOnEsc
 				onRequestClose={handleCloseModal}
+				shouldCloseOnEsc
 				shouldCloseOnOverlayClick
 			>
 				<div className="w-full sm:w-1/2 h-fit bg-slate-100 dark:bg-gray-800 p-4 rounded-md relative">

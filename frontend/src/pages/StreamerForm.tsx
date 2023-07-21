@@ -7,6 +7,7 @@ import { streamersService } from "../services/streamers.service";
 import { StreamerFormSchema, type StreamerForm } from "../shared.types";
 import { socket } from "../socket";
 import { EVENTS } from "../websocket.config";
+import { Input } from "../components/Input";
 
 interface ErrorResponse {
 	error: { message: string };
@@ -63,13 +64,11 @@ function StreamerForm(props: Props): JSX.Element {
 			<h3 className="pb-4 text-xl">Upload</h3>
 			<p className="pb-2">Share your favourite streamer with others!</p>
 			<div className="flex flex-col py-1">
-				<label htmlFor="Name" className="pb-2">
-					Name
-				</label>
-				<input
+				<Input
+					register={register}
 					id="name"
-					className="inline-block text-black rounded-sm h-7 p-2 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
-					{...register("name")}
+					label="Name"
+					className="inline-block h-7 p-2 rounded-md border-2 text-black dark:text-gray-200 dark:bg-gray-700  border-gray-200 dark:border-gray-600"
 				/>
 				<FieldError
 					when={Boolean(errors.name)}
@@ -82,7 +81,7 @@ function StreamerForm(props: Props): JSX.Element {
 				</label>
 				<select
 					id="Platform"
-					className="text-black rounded-sm h-7 pl-2 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
+					className="text-black rounded-md h-7 pl-2 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
 					{...register("platform")}
 				>
 					<option value="Twitch">Twitch</option>
@@ -102,7 +101,7 @@ function StreamerForm(props: Props): JSX.Element {
 				</label>
 				<textarea
 					id="Description"
-					className="text-black rounded-sm px-2 py-1 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
+					className="text-black rounded-md border-2 px-2 py-1 border-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
 					{...register("description")}
 				/>
 				<FieldError
@@ -121,4 +120,4 @@ function StreamerForm(props: Props): JSX.Element {
 	);
 }
 
-export { StreamerForm };
+export default StreamerForm;

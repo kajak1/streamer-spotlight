@@ -3,11 +3,12 @@ import {
 	socketLoggerIncoming,
 	socketLoggerOutcoming,
 } from "./middleware/requestLogger";
-import { EVENTS, createSocketServer } from "./websocket.config";
+import { EVENTS, createWebsocketServer } from "./websocket.config";
 import { createStreamersSocketRepository } from "./streamers/streamers.socket.repository";
-import { logger } from "../logger";
+import { logger } from "./logger";
+import { env } from "./env";
 
-const PORT = 3001;
+const PORT = env.PORT || 0;
 const HOST = "0.0.0.0";
 
 const app = createServer();
@@ -16,7 +17,7 @@ const httpServer = app.listen(PORT, HOST, () => {
 	console.log(`Running on http://${HOST}:${PORT}`);
 });
 
-const io = createSocketServer(httpServer);
+const io = createWebsocketServer(httpServer);
 
 io.on(EVENTS.CONNECTION, (socket) => {
 	logger.info(`Connected: ${socket.id}`);

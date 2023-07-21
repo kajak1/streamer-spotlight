@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import { logger } from "../../logger";
+import { logger } from "../logger";
+import { ApplicationError } from "../errors/ApplicationError";
 
 export function errorLogger(
 	err: Error,
@@ -7,6 +8,12 @@ export function errorLogger(
 	res: Response,
 	next: NextFunction
 ) {
-	logger.error(err.stack);
+	if (err instanceof ApplicationError) {
+		if (err.baseError instanceof Error) {
+			logger.error(err.baseError.stack);
+		}
+	} else {
+		logger.error(err.stack);
+	}
 	next(err);
 }
