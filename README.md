@@ -1,5 +1,3 @@
-# ❗ For the most recent version check out the dev branch
-
 ## How to run
 
 In order to run this app, following steps are required:
