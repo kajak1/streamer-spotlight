@@ -1,64 +1,22 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { AxiosError } from "axios";
-import { useForm } from "react-hook-form";
-import toast from "react-hot-toast";
-import { FieldError } from "../components/FieldError";
-import { streamersService } from "../services/streamers.service";
-import { StreamerFormSchema, type StreamerForm } from "../shared.types";
-import { socket } from "../socket";
-import { EVENTS } from "../websocket.config";
-import { Input } from "../components/Input";
-
-interface ErrorResponse {
-	error: { message: string };
-}
-
-function isErrorResponse(e: unknown): e is ErrorResponse {
-	return (
-		(e as ErrorResponse).error !== undefined &&
-		(e as ErrorResponse).error.message !== undefined
-	);
-}
+import { Input } from "../FormFields";
+import { FieldError } from "../FormFields/FieldError";
+import { useStreamerForm } from "./use-streamer-form";
 
 interface Props {
 	onSubmit: () => void;
 }
 
-function StreamerForm(props: Props): JSX.Element {
+export function StreamerForm(props: Props): JSX.Element {
 	const {
+		handleSubmit,
 		register,
 		trigger,
-		handleSubmit,
 		formState: { errors },
-	} = useForm<StreamerForm>({
-		resolver: zodResolver(StreamerFormSchema),
-	});
-
-	async function onSubmit(data: StreamerForm) {
-		try {
-			const { id } = await streamersService.create({ streamerData: data });
-			if (socket.connected) {
-				socket.emit(EVENTS.STREAMER_ADDED, id);
-			}
-			toast.success("Added streamer");
-		} catch (e) {
-			console.error(e);
-			if (
-				e instanceof AxiosError &&
-				e.response?.data &&
-				isErrorResponse(e.response.data)
-			) {
-				toast.error(e.response?.data.error.message);
-				console.error(e.response?.data.error.message);
-			}
-		}
-
-		props.onSubmit();
-	}
+	} = useStreamerForm(props);
 
 	return (
 		<form
-			onSubmit={handleSubmit(onSubmit)}
+			onSubmit={handleSubmit}
 			className="dark:text-gray-200 dark:bg-gray-800"
 		>
 			<h3 className="pb-4 text-xl">Upload</h3>
@@ -119,5 +77,3 @@ function StreamerForm(props: Props): JSX.Element {
 		</form>
 	);
 }
-
-export default StreamerForm;

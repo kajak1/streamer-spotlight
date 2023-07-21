@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Toaster } from "react-hot-toast";
-import { Header } from "../components/Header";
+import { Header } from "../components/Header/Header";
 
 export default function Layout({ children }: { children: ReactNode }) {
 	return (

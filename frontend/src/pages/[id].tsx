@@ -6,7 +6,7 @@ import type {
 	InferGetStaticPropsType,
 } from "next";
 import Image from "next/image";
-import { useRandomImage } from "../hooks/useRandomImage";
+import { useRandomImage } from "../hooks/use-random-image";
 import { streamersService } from "../services/streamers.service";
 import { Streamer } from "../shared.types";
 

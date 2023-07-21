@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ThemeSwitch } from "./ThemeSwitch";
+import { ThemeSwitch } from "../ThemeSwitch/ThemeSwitch";
 
 function Header(): JSX.Element {
 	return (

@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSun, faMoon } from "@fortawesome/free-regular-svg-icons";
-import { useTheme } from "../context/ThemeContext";
+import { useTheme } from "@/src/context/ThemeContext";
 
 function ThemeSwitch(): JSX.Element {
 	const { colorMode, setColorMode } = useTheme();

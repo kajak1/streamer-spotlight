@@ -1,30 +1,8 @@
-import { useEffect } from "react";
-import { mutate } from "swr";
-import { useStreamers } from "../hooks/useStreamers";
-import { socket } from "../socket";
-import { SWR_KEYS } from "../swr-keys";
-import { EVENTS } from "../websocket.config";
-import StreamerCard from "./StreamerCard";
+import { StreamerCard } from "../StreamerCard";
+import { useStreamersList } from "./use-streamers-list";
 
-function StreamersList(): JSX.Element {
-	const { streamers, error } = useStreamers();
-
-	useEffect(() => {
-		socket.connect();
-
-		socket.on(EVENTS.STREAMER_ADDED, (newStreamer) => {
-			mutate(
-				SWR_KEYS.GET_ALL,
-				streamers ? [...streamers, newStreamer] : [newStreamer]
-			);
-		});
-
-		return () => {
-			socket.off(EVENTS.STREAMER_ADDED);
-
-			socket.disconnect();
-		};
-	}, [streamers]);
+export function StreamersList(): JSX.Element {
+	const { streamers, error } = useStreamersList();
 
 	if (error || typeof streamers === "undefined")
 		return <div>Failed to load</div>;
@@ -55,5 +33,3 @@ function StreamersList(): JSX.Element {
 		</article>
 	);
 }
-
-export default StreamersList;

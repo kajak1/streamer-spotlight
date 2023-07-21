@@ -3,13 +3,9 @@ import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Image from "next/image";
 import Link from "next/link";
-import { toast } from "react-hot-toast";
-import { useRandomImage } from "../hooks/useRandomImage";
-import { streamersService } from "../services/streamers.service";
-import type { Streamer, Vote } from "../shared.types";
-import { ServerToClientEvents, socket } from "../socket";
-import { EVENTS } from "../websocket.config";
-import { useEffect, useState } from "react";
+import { useRandomImage } from "../../hooks/use-random-image";
+import type { Streamer } from "../../shared.types";
+import { useStreamerCard } from "./use-streamer-card";
 
 interface Props {
 	id: Streamer["id"];
@@ -18,50 +14,9 @@ interface Props {
 	initialDownvotes: Streamer["downvotes"];
 }
 
-function StreamerCard({
-	id,
-	name,
-	initialUpvotes,
-	initialDownvotes,
-}: Props): JSX.Element {
-	const [votes, setVotes] = useState({
-		upvotes: initialUpvotes,
-		downvotes: initialDownvotes,
-	});
-
-	const { data: image } = useRandomImage(name);
-
-	useEffect(() => {
-		const voteHandler: ServerToClientEvents["VOTE"] = (updated) => {
-			if (updated.id !== id) return;
-
-			setVotes({
-				...votes,
-				upvotes: updated.upvotes,
-				downvotes: updated.downvotes,
-			});
-		};
-
-		socket.on(EVENTS.VOTE, voteHandler);
-
-		return () => {
-			socket.off(EVENTS.VOTE, voteHandler);
-		};
-	}, [id, votes, name]);
-
-	function handleVote(voteType: Vote) {
-		return async function makeVote() {
-			try {
-				await streamersService.vote({ id, voteType });
-				if (socket.connected) {
-					socket.emit(EVENTS.VOTE, id);
-				}
-			} catch (e) {
-				toast.error("Failed to vote");
-				console.error(e);
-			}
-		};
-	}
+export function StreamerCard(props: Props): JSX.Element {
+	const { handleVote, votes } = useStreamerCard(props);
+	const { data: image } = useRandomImage(props.name);
 
 	return (
 		<div className="w-full h-24 flex flex-row py-1 px-2 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-800/50 border-2 border-b-0 rounded-md">
@@ -75,7 +30,7 @@ function StreamerCard({
 			</div>
 			<div className="flex-1 flex flex-col justify-evenly sm:flex-row sm:justify-between sm:items-center">
 				<h3 className="text-center text-xl sm:text-left break-all sm:w-1/3">
-					{name}
+					{props.name}
 				</h3>
 				<div className="flex flex-row justify-end gap-4 sm:w-2/3">
 					<span>
@@ -97,7 +52,7 @@ function StreamerCard({
 						<span className="text-xl">{votes.downvotes ?? "loading"}</span>
 					</span>
 					<Link
-						href={`/${encodeURIComponent(id)}`}
+						href={`/${encodeURIComponent(props.id)}`}
 						className="h-fit border-1 px-2 py-1 rounded-md border-gray-300 hover:bg-gray-300 bg-gray-200 dark:bg-blue-800 dark:hover:bg-blue-900 dark:border-blue-700"
 					>
 						See details
@@ -107,5 +62,3 @@ function StreamerCard({
 		</div>
 	);
 }
-
-export default StreamerCard;
