@@ -14,11 +14,37 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id String @id @default(uuid())
+}
+
 model Streamer {
   id          String  @id @default(uuid())
   name        String  @unique
   description String?
-  platform    String
-  upvotes     Int     @default(0)
-  downvotes   Int     @default(0)
+
+  Upvote   Upvote[]
+  Downvote Downvote[]
+  Platform Platform[]
+}
+
+model Platform {
+  id          String   @id @default(uuid())
+  type        String   @unique
+  streamer_id String
+  streamer    Streamer @relation(fields: [streamer_id], references: [id])
+}
+
+model Upvote {
+  id          String   @id @default(uuid())
+  user_id     String
+  streamer_id String
+  streamer    Streamer @relation(fields: [streamer_id], references: [id])
+}
+
+model Downvote {
+  id          String   @id @default(uuid())
+  user_id     String
+  streamer_id String
+  streamer    Streamer @relation(fields: [streamer_id], references: [id])
 }
