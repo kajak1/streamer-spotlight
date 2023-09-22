@@ -28,13 +28,7 @@ async function main() {
     },
   })
 
-  const res = await prisma.$transaction([twitch, tiktok, kick, youtube, rumble])
-  console.log("res: ", res)
-  
-  const added = await prisma.platform.findMany()
-  console.log("added: ", added)
-
-
+  await prisma.$transaction([twitch, tiktok, kick, youtube, rumble])
 }
 
 main()

@@ -11,7 +11,6 @@
     "prepare-prisma-dev_deprecated": "dotenv -e .env.development -- npx prisma migrate dev --name init",
     "dev-server:docker": "nodemon -L -r dotenv/config --exec ts-node-transpile-only src/index.ts dotenv_config_path=.env.development",
     "dev-server:local": "nodemon -L -r dotenv/config --exec ts-node-transpile-only src/index.ts dotenv_config_path=.env.development.local",
-    "dev-server_old": "dotenv -e .env.development -- nodemon --watch ./**/*.ts --exec ts-node-transpile-only src/index.ts",
     
     "test": "dotenv -e .env.test -- ts-mocha ./src/__tests__/**/*.ts",
     "prepare-prisma-test": "dotenv -e .env.test -- npx prisma migrate dev",
