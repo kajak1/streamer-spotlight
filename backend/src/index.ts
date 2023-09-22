@@ -4,9 +4,9 @@ import {
 	socketLoggerOutcoming,
 } from "./middleware/requestLogger";
 import { EVENTS, createWebsocketServer } from "./websocket.config";
-import { createStreamersSocketRepository } from "./streamers/streamers.socket.repository";
 import { logger } from "./logger";
 import { env } from "./env";
+import { createStreamersSocketRepository } from "./repositories/streamers.socket.repository";
 
 const PORT = env.PORT || 0;
 const HOST = "0.0.0.0";

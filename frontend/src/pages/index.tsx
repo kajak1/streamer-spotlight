@@ -1,15 +1,29 @@
 import { CreateStreamerButton } from "../components/CreateStreamerButton/CreateStreamerButton";
-import { Modal } from "../components/Modal/Modal";
+import { Modal } from "../components/Modal";
 import { StreamerForm } from "../components/StreamerForm";
 import { StreamersList } from "../components/StreamersList";
 import { useModal } from "../hooks/use-modal";
+import useSWR from "swr";
+import { SWR_KEYS } from "../swr-keys";
+import { streamersService } from "../services/streamers.service";
+import { useEffect } from "react";
 
 export default function Home() {
 	const { isOpen, handleOpenModal, handleCloseModal } = useModal();
 
+	// const { isLoading } = useSWR(SWR_KEYS.STREAMERS, streamersService.getAll);
+	// const isLoading = false
+	// console.log("ASDasdasdajshdaksjhd")
+	// useEffect(() => {
+	// 	fetch("https://jsonplaceholder.typicode.com/todos/1")
+	// 	.then(response => response.json())
+	// 	.then(json => console.log(json))
+	// }, []);
+
 	return (
 		<>
 			<CreateStreamerButton onClick={handleOpenModal} />
+			{/* <p>isLoading: {`${isLoading}`}</p> */}
 			<StreamersList />
 			<Modal
 				isOpen={isOpen}

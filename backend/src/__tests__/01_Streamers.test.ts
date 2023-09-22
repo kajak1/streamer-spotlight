@@ -2,17 +2,20 @@ import { Streamer } from "@prisma/client";
 import { expect } from "chai";
 import { beforeEach, describe } from "mocha";
 import supertest from "supertest";
+import { StreamerSchema } from "../../prisma/generated/zod";
+import { VoteTypeBody } from "../shared.types";
 import cleanDb from "./clean-db";
 import { user101 } from "./sample-data";
 import seedDb from "./seed-db";
-import { VoteTypeBody } from "../shared.types";
-import { StreamerSchema } from "../../prisma/generated/zod";
+import { env } from "../env";
+import z from "zod";
 
 describe("Streamers", () => {
 	let host: ReturnType<typeof supertest>;
 
 	before(async () => {
-		host = supertest("http://localhost:3001");
+		host = supertest(`http://localhost:${env.PORT}`);
+		await cleanDb();
 	});
 
 	beforeEach(async () => {
@@ -85,10 +88,10 @@ describe("Streamers", () => {
 		});
 
 		it("WHEN posted a streamer THEN res code 200", async () => {
-			const newUser: Streamer = {
-				...user101,
-				id: "3b40824d-a3b6-44d9-95a1-5f21eb101101",
+			const newUser = {
 				name: "user101101",
+				description: "user101101_description",
+				platform: "Twitch",
 			};
 
 			const { statusCode } = await host.post("/streamers").send(newUser);
@@ -121,23 +124,75 @@ describe("Streamers", () => {
 		it("WHEN upvote THEN increase upvote count by 1", async () => {
 			await seedDb();
 
-			const voteType: VoteTypeBody = { voteType: "upvote" };
-			const { statusCode: statusCode_PUT } = await host
-				.put(`/streamers/${user101.id}/vote`)
-				.send(voteType);
+			const addUpvoteBody: VoteTypeBody = { voteType: "upvote", operation: "add" };
 
-			const { statusCode: statusCode_GET, body } = await host.get(
-				`/streamers/${user101.id}`
-			);
+			const { statusCode: statusCode_PUT } = await host.put(`/streamers/${user101.id}/vote`).send(addUpvoteBody);
 
-			const parseResult = StreamerSchema.safeParse(body);
+			const { statusCode: statusCode_GET, body } = await host.get(`/streamers/${user101.id}`);
+
+			const responseBodySchema = StreamerSchema.extend({
+				_count: z.object({
+					Downvote: z.number(),
+					Upvote: z.number(),
+				}),
+			});
+
+			const parseResult = responseBodySchema.safeParse(body);
 
 			expect(parseResult.success).to.equal(true);
 			if (parseResult.success) {
-				expect(parseResult.data.upvotes).to.equal(user101.upvotes + 1);
+				expect(parseResult.data._count.Upvote).to.equal(1);
 			}
 			expect(statusCode_PUT).to.equal(200);
 			expect(statusCode_GET).to.equal(200);
+		});
+
+		it("WHEN upvote THEN remove downvote", async () => {
+			const addDownvote: VoteTypeBody = {
+				voteType: "downvote",
+				operation: "add",
+			};
+
+			const { statusCode: addDownvoteCode } = await host.put(`/streamers/${user101.id}/vote`).send(addDownvote);
+
+			const { body: streamerWithDownvote } = await host.get(`/streamers/${user101.id}`);
+			const responseBodySchema_downvote = StreamerSchema.extend({
+				_count: z.object({
+					Downvote: z.number(),
+					Upvote: z.number(),
+				}),
+			});
+
+			const parseResult_downvote = responseBodySchema_downvote.safeParse(streamerWithDownvote);
+
+			expect(parseResult_downvote.success).to.equal(true);
+			if (parseResult_downvote.success) {
+				expect(parseResult_downvote.data._count.Downvote).to.equal(1);
+				expect(parseResult_downvote.data._count.Upvote).to.equal(0);
+			}
+
+			const addUpvote: VoteTypeBody = { voteType: "upvote", operation: "add" };
+
+			const { statusCode: addUpvoteCode } = await host.put(`/streamers/${user101.id}/vote`).send(addUpvote);
+
+			const { body: streamerWithUpvote } = await host.get(`/streamers/${user101.id}`);
+			const responseBodySchema_upvote = StreamerSchema.extend({
+				_count: z.object({
+					Downvote: z.number(),
+					Upvote: z.number(),
+				}),
+			});
+
+			const parseResult_upvote = responseBodySchema_upvote.safeParse(streamerWithUpvote);
+
+			expect(parseResult_upvote.success).to.equal(true);
+			if (parseResult_upvote.success) {
+				expect(parseResult_upvote.data._count.Downvote).to.equal(0);
+				expect(parseResult_upvote.data._count.Upvote).to.equal(1);
+			}
+
+			expect(addDownvoteCode).to.equal(200);
+			expect(addUpvoteCode).to.equal(200);
 		});
 	});
 });

@@ -1,5 +1,6 @@
 import axios, { AxiosInstance } from "axios";
 
+// TODO extends a Service abstract class
 class ImagesService {
 	private BASE_URL = "https://picsum.photos";
 	private IMAGE_ENDPOINT = `/seed`;

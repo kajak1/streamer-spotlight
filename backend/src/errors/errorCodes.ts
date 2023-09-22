@@ -3,7 +3,9 @@ export type ErrorCodes =
 	| "NOT_FOUND"
 	| "MISSING_PARAMETERS"
 	| "MISSING_BODY"
-	| "NAME_ALREADY_EXISTS";
+	| "NAME_ALREADY_EXISTS"
+	| "ALREADY_VOTED"
+	| "PLATFORM_NOT_ALLOWED";
 
 type ErrorCodesMap = {
 	[ErrorTag in ErrorCodes]: {
@@ -32,5 +34,13 @@ export const errorCodes: ErrorCodesMap = {
 	NAME_ALREADY_EXISTS: {
 		code: 400,
 		message: "Streamer with this name already exists",
+	},
+	ALREADY_VOTED: {
+		code: 400,
+		message: "You have already voted",
+	},
+	PLATFORM_NOT_ALLOWED: {
+		code: 400,
+		message: "Chosen platform is not allowed",
 	},
 };

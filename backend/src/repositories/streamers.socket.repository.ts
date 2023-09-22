@@ -1,6 +1,7 @@
 import { Server } from "socket.io";
 import { EVENTS } from "../websocket.config";
 import { streamersRepository } from "./streamers.repository";
+import { getPrismaClient } from "../prismaClient";
 
 export class StreamersSocketRepository {
 	constructor(private io: Server) {
@@ -8,25 +9,40 @@ export class StreamersSocketRepository {
 	}
 
 	handleAddedStreamer = async (id: string) => {
-		const createdStreamer = await streamersRepository.findOne({
-			id: id,
+		const createdStreamer = await streamersRepository.findUnique({
+			where: {
+				id: id,
+			},
 		});
 
 		this.io.emit(EVENTS.STREAMER_ADDED, createdStreamer);
 	};
 
-	handleVote = async (id: string) => {
-		const updatedStreamer = await streamersRepository.findOne({ id: id });
+	handleVote = async (streamerId: string) => {
+		const streamer = await getPrismaClient().streamer.findUnique({
+			where: {
+				id: streamerId,
+			},
+			select: {
+				id: true,
+				_count: {
+					select: {
+						Downvote: true,
+						Upvote: true,
+					},
+				},
+			},
+		});
 
-		if (!updatedStreamer) {
+		if (!streamer) {
 			console.log("no streamer");
 			return;
 		}
 
 		this.io.emit(EVENTS.VOTE, {
-			id: updatedStreamer.id,
-			upvotes: updatedStreamer.upvotes,
-			downvotes: updatedStreamer.downvotes,
+			id: streamer.id,
+			upvotes: streamer._count.Upvote,
+			downvotes: streamer._count.Downvote,
 		});
 	};
 }

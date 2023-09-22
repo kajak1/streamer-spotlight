@@ -1,19 +1,36 @@
 services:
   backend:
     build: ./backend
-    command: "npm run start"
+    container_name: streamer-backend
+    command: "pnpm start:docker"
     ports:
       - 3001:3001
-    working_dir: /app
     volumes:
+      - ./backend:/app
+      # - /app/prisma
+      - /app/node_modules
+      - /app/.next
       - streamers-db:/etc/database
-    
+    depends_on:
+      - frontend
+    tty: true
+    stdin_open: true
+
   frontend:
-    build: ./frontend
-    command: "npm run dev"
+    container_name: streamer-web
+    build: 
+      context: ./frontend
+      target: dev
+    environment:
+      - WATCHPACK_POLLING=true
+      - BACKEND_URL=backend
+      # - NODE_OPTIONS=--max-old-space-size=4096
+    command: "pnpm dev"
     ports:
       - 3000:3000
-    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
 
 volumes:
   streamers-db:

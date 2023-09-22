@@ -2,7 +2,10 @@ import { Socket, io } from "socket.io-client";
 import { Streamer } from "./shared.types";
 import { SERVER_URL } from "./websocket.config";
 
-type UpdatedStreamer = Pick<Streamer, "id" | "upvotes" | "downvotes">;
+type UpdatedStreamer = Pick<Streamer, "id"> & {
+	downvotes: number;
+	upvotes: number;
+};
 
 export interface ServerToClientEvents {
 	VOTE: (updated: UpdatedStreamer) => void;
@@ -14,9 +17,6 @@ export interface ClientToServerEvents {
 	STREAMER_ADDED: (id: Streamer["id"]) => void;
 }
 
-export const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
-	SERVER_URL,
-	{
-		autoConnect: false,
-	}
-);
+export const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(SERVER_URL, {
+	autoConnect: false,
+});

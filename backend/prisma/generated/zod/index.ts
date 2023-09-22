@@ -14,13 +14,13 @@ export const TransactionIsolationLevelSchema = z.enum(['Serializable']);
 
 export const UserScalarFieldEnumSchema = z.enum(['id']);
 
-export const StreamerScalarFieldEnumSchema = z.enum(['id','name','description']);
+export const StreamerScalarFieldEnumSchema = z.enum(['id','name','description','platformId']);
 
-export const PlatformScalarFieldEnumSchema = z.enum(['id','type','streamer_id']);
+export const PlatformScalarFieldEnumSchema = z.enum(['id','type']);
 
-export const UpvoteScalarFieldEnumSchema = z.enum(['id','user_id','streamer_id']);
+export const UpvoteScalarFieldEnumSchema = z.enum(['id','streamerId','userId']);
 
-export const DownvoteScalarFieldEnumSchema = z.enum(['id','user_id','streamer_id']);
+export const DownvoteScalarFieldEnumSchema = z.enum(['id','streamerId','userId']);
 
 export const SortOrderSchema = z.enum(['asc','desc']);
 
@@ -47,6 +47,7 @@ export const StreamerSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
   description: z.string().nullable(),
+  platformId: z.string(),
 })
 
 export type Streamer = z.infer<typeof StreamerSchema>
@@ -58,7 +59,6 @@ export type Streamer = z.infer<typeof StreamerSchema>
 export const PlatformSchema = z.object({
   id: z.string().uuid(),
   type: z.string(),
-  streamer_id: z.string(),
 })
 
 export type Platform = z.infer<typeof PlatformSchema>
@@ -69,8 +69,8 @@ export type Platform = z.infer<typeof PlatformSchema>
 
 export const UpvoteSchema = z.object({
   id: z.string().uuid(),
-  user_id: z.string(),
-  streamer_id: z.string(),
+  streamerId: z.string(),
+  userId: z.string(),
 })
 
 export type Upvote = z.infer<typeof UpvoteSchema>
@@ -81,8 +81,8 @@ export type Upvote = z.infer<typeof UpvoteSchema>
 
 export const DownvoteSchema = z.object({
   id: z.string().uuid(),
-  user_id: z.string(),
-  streamer_id: z.string(),
+  streamerId: z.string(),
+  userId: z.string(),
 })
 
 export type Downvote = z.infer<typeof DownvoteSchema>
@@ -94,17 +94,40 @@ export type Downvote = z.infer<typeof DownvoteSchema>
 // USER
 //------------------------------------------------------
 
+export const UserIncludeSchema: z.ZodType<Prisma.UserInclude> = z.object({
+  Upvote: z.union([z.boolean(),z.lazy(() => UpvoteFindManyArgsSchema)]).optional(),
+  Downvote: z.union([z.boolean(),z.lazy(() => DownvoteFindManyArgsSchema)]).optional(),
+  _count: z.union([z.boolean(),z.lazy(() => UserCountOutputTypeArgsSchema)]).optional(),
+}).strict()
+
+export const UserArgsSchema: z.ZodType<Prisma.UserArgs> = z.object({
+  select: z.lazy(() => UserSelectSchema).optional(),
+  include: z.lazy(() => UserIncludeSchema).optional(),
+}).strict();
+
+export const UserCountOutputTypeArgsSchema: z.ZodType<Prisma.UserCountOutputTypeArgs> = z.object({
+  select: z.lazy(() => UserCountOutputTypeSelectSchema).nullish(),
+}).strict();
+
+export const UserCountOutputTypeSelectSchema: z.ZodType<Prisma.UserCountOutputTypeSelect> = z.object({
+  Upvote: z.boolean().optional(),
+  Downvote: z.boolean().optional(),
+}).strict();
+
 export const UserSelectSchema: z.ZodType<Prisma.UserSelect> = z.object({
   id: z.boolean().optional(),
+  Upvote: z.union([z.boolean(),z.lazy(() => UpvoteFindManyArgsSchema)]).optional(),
+  Downvote: z.union([z.boolean(),z.lazy(() => DownvoteFindManyArgsSchema)]).optional(),
+  _count: z.union([z.boolean(),z.lazy(() => UserCountOutputTypeArgsSchema)]).optional(),
 }).strict()
 
 // STREAMER
 //------------------------------------------------------
 
 export const StreamerIncludeSchema: z.ZodType<Prisma.StreamerInclude> = z.object({
+  Platform: z.union([z.boolean(),z.lazy(() => PlatformArgsSchema)]).optional(),
   Upvote: z.union([z.boolean(),z.lazy(() => UpvoteFindManyArgsSchema)]).optional(),
   Downvote: z.union([z.boolean(),z.lazy(() => DownvoteFindManyArgsSchema)]).optional(),
-  Platform: z.union([z.boolean(),z.lazy(() => PlatformFindManyArgsSchema)]).optional(),
   _count: z.union([z.boolean(),z.lazy(() => StreamerCountOutputTypeArgsSchema)]).optional(),
 }).strict()
 
@@ -120,16 +143,16 @@ export const StreamerCountOutputTypeArgsSchema: z.ZodType<Prisma.StreamerCountOu
 export const StreamerCountOutputTypeSelectSchema: z.ZodType<Prisma.StreamerCountOutputTypeSelect> = z.object({
   Upvote: z.boolean().optional(),
   Downvote: z.boolean().optional(),
-  Platform: z.boolean().optional(),
 }).strict();
 
 export const StreamerSelectSchema: z.ZodType<Prisma.StreamerSelect> = z.object({
   id: z.boolean().optional(),
   name: z.boolean().optional(),
   description: z.boolean().optional(),
+  platformId: z.boolean().optional(),
+  Platform: z.union([z.boolean(),z.lazy(() => PlatformArgsSchema)]).optional(),
   Upvote: z.union([z.boolean(),z.lazy(() => UpvoteFindManyArgsSchema)]).optional(),
   Downvote: z.union([z.boolean(),z.lazy(() => DownvoteFindManyArgsSchema)]).optional(),
-  Platform: z.union([z.boolean(),z.lazy(() => PlatformFindManyArgsSchema)]).optional(),
   _count: z.union([z.boolean(),z.lazy(() => StreamerCountOutputTypeArgsSchema)]).optional(),
 }).strict()
 
@@ -137,7 +160,8 @@ export const StreamerSelectSchema: z.ZodType<Prisma.StreamerSelect> = z.object({
 //------------------------------------------------------
 
 export const PlatformIncludeSchema: z.ZodType<Prisma.PlatformInclude> = z.object({
-  streamer: z.union([z.boolean(),z.lazy(() => StreamerArgsSchema)]).optional(),
+  Streamer: z.union([z.boolean(),z.lazy(() => StreamerFindManyArgsSchema)]).optional(),
+  _count: z.union([z.boolean(),z.lazy(() => PlatformCountOutputTypeArgsSchema)]).optional(),
 }).strict()
 
 export const PlatformArgsSchema: z.ZodType<Prisma.PlatformArgs> = z.object({
@@ -145,18 +169,27 @@ export const PlatformArgsSchema: z.ZodType<Prisma.PlatformArgs> = z.object({
   include: z.lazy(() => PlatformIncludeSchema).optional(),
 }).strict();
 
+export const PlatformCountOutputTypeArgsSchema: z.ZodType<Prisma.PlatformCountOutputTypeArgs> = z.object({
+  select: z.lazy(() => PlatformCountOutputTypeSelectSchema).nullish(),
+}).strict();
+
+export const PlatformCountOutputTypeSelectSchema: z.ZodType<Prisma.PlatformCountOutputTypeSelect> = z.object({
+  Streamer: z.boolean().optional(),
+}).strict();
+
 export const PlatformSelectSchema: z.ZodType<Prisma.PlatformSelect> = z.object({
   id: z.boolean().optional(),
   type: z.boolean().optional(),
-  streamer_id: z.boolean().optional(),
-  streamer: z.union([z.boolean(),z.lazy(() => StreamerArgsSchema)]).optional(),
+  Streamer: z.union([z.boolean(),z.lazy(() => StreamerFindManyArgsSchema)]).optional(),
+  _count: z.union([z.boolean(),z.lazy(() => PlatformCountOutputTypeArgsSchema)]).optional(),
 }).strict()
 
 // UPVOTE
 //------------------------------------------------------
 
 export const UpvoteIncludeSchema: z.ZodType<Prisma.UpvoteInclude> = z.object({
-  streamer: z.union([z.boolean(),z.lazy(() => StreamerArgsSchema)]).optional(),
+  Streamer: z.union([z.boolean(),z.lazy(() => StreamerArgsSchema)]).optional(),
+  User: z.union([z.boolean(),z.lazy(() => UserArgsSchema)]).optional(),
 }).strict()
 
 export const UpvoteArgsSchema: z.ZodType<Prisma.UpvoteArgs> = z.object({
@@ -166,16 +199,18 @@ export const UpvoteArgsSchema: z.ZodType<Prisma.UpvoteArgs> = z.object({
 
 export const UpvoteSelectSchema: z.ZodType<Prisma.UpvoteSelect> = z.object({
   id: z.boolean().optional(),
-  user_id: z.boolean().optional(),
-  streamer_id: z.boolean().optional(),
-  streamer: z.union([z.boolean(),z.lazy(() => StreamerArgsSchema)]).optional(),
+  streamerId: z.boolean().optional(),
+  userId: z.boolean().optional(),
+  Streamer: z.union([z.boolean(),z.lazy(() => StreamerArgsSchema)]).optional(),
+  User: z.union([z.boolean(),z.lazy(() => UserArgsSchema)]).optional(),
 }).strict()
 
 // DOWNVOTE
 //------------------------------------------------------
 
 export const DownvoteIncludeSchema: z.ZodType<Prisma.DownvoteInclude> = z.object({
-  streamer: z.union([z.boolean(),z.lazy(() => StreamerArgsSchema)]).optional(),
+  Streamer: z.union([z.boolean(),z.lazy(() => StreamerArgsSchema)]).optional(),
+  User: z.union([z.boolean(),z.lazy(() => UserArgsSchema)]).optional(),
 }).strict()
 
 export const DownvoteArgsSchema: z.ZodType<Prisma.DownvoteArgs> = z.object({
@@ -185,9 +220,10 @@ export const DownvoteArgsSchema: z.ZodType<Prisma.DownvoteArgs> = z.object({
 
 export const DownvoteSelectSchema: z.ZodType<Prisma.DownvoteSelect> = z.object({
   id: z.boolean().optional(),
-  user_id: z.boolean().optional(),
-  streamer_id: z.boolean().optional(),
-  streamer: z.union([z.boolean(),z.lazy(() => StreamerArgsSchema)]).optional(),
+  streamerId: z.boolean().optional(),
+  userId: z.boolean().optional(),
+  Streamer: z.union([z.boolean(),z.lazy(() => StreamerArgsSchema)]).optional(),
+  User: z.union([z.boolean(),z.lazy(() => UserArgsSchema)]).optional(),
 }).strict()
 
 
@@ -200,10 +236,14 @@ export const UserWhereInputSchema: z.ZodType<Prisma.UserWhereInput> = z.object({
   OR: z.lazy(() => UserWhereInputSchema).array().optional(),
   NOT: z.union([ z.lazy(() => UserWhereInputSchema),z.lazy(() => UserWhereInputSchema).array() ]).optional(),
   id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  Upvote: z.lazy(() => UpvoteListRelationFilterSchema).optional(),
+  Downvote: z.lazy(() => DownvoteListRelationFilterSchema).optional()
 }).strict();
 
 export const UserOrderByWithRelationInputSchema: z.ZodType<Prisma.UserOrderByWithRelationInput> = z.object({
-  id: z.lazy(() => SortOrderSchema).optional()
+  id: z.lazy(() => SortOrderSchema).optional(),
+  Upvote: z.lazy(() => UpvoteOrderByRelationAggregateInputSchema).optional(),
+  Downvote: z.lazy(() => DownvoteOrderByRelationAggregateInputSchema).optional()
 }).strict();
 
 export const UserWhereUniqueInputSchema: z.ZodType<Prisma.UserWhereUniqueInput> = z.object({
@@ -231,18 +271,20 @@ export const StreamerWhereInputSchema: z.ZodType<Prisma.StreamerWhereInput> = z.
   id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   name: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   description: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
+  platformId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  Platform: z.union([ z.lazy(() => PlatformRelationFilterSchema),z.lazy(() => PlatformWhereInputSchema) ]).optional(),
   Upvote: z.lazy(() => UpvoteListRelationFilterSchema).optional(),
-  Downvote: z.lazy(() => DownvoteListRelationFilterSchema).optional(),
-  Platform: z.lazy(() => PlatformListRelationFilterSchema).optional()
+  Downvote: z.lazy(() => DownvoteListRelationFilterSchema).optional()
 }).strict();
 
 export const StreamerOrderByWithRelationInputSchema: z.ZodType<Prisma.StreamerOrderByWithRelationInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
   name: z.lazy(() => SortOrderSchema).optional(),
   description: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
+  platformId: z.lazy(() => SortOrderSchema).optional(),
+  Platform: z.lazy(() => PlatformOrderByWithRelationInputSchema).optional(),
   Upvote: z.lazy(() => UpvoteOrderByRelationAggregateInputSchema).optional(),
-  Downvote: z.lazy(() => DownvoteOrderByRelationAggregateInputSchema).optional(),
-  Platform: z.lazy(() => PlatformOrderByRelationAggregateInputSchema).optional()
+  Downvote: z.lazy(() => DownvoteOrderByRelationAggregateInputSchema).optional()
 }).strict();
 
 export const StreamerWhereUniqueInputSchema: z.ZodType<Prisma.StreamerWhereUniqueInput> = z.object({
@@ -254,6 +296,7 @@ export const StreamerOrderByWithAggregationInputSchema: z.ZodType<Prisma.Streame
   id: z.lazy(() => SortOrderSchema).optional(),
   name: z.lazy(() => SortOrderSchema).optional(),
   description: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
+  platformId: z.lazy(() => SortOrderSchema).optional(),
   _count: z.lazy(() => StreamerCountOrderByAggregateInputSchema).optional(),
   _max: z.lazy(() => StreamerMaxOrderByAggregateInputSchema).optional(),
   _min: z.lazy(() => StreamerMinOrderByAggregateInputSchema).optional()
@@ -266,6 +309,7 @@ export const StreamerScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.Stre
   id: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   name: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   description: z.union([ z.lazy(() => StringNullableWithAggregatesFilterSchema),z.string() ]).optional().nullable(),
+  platformId: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
 }).strict();
 
 export const PlatformWhereInputSchema: z.ZodType<Prisma.PlatformWhereInput> = z.object({
@@ -274,15 +318,13 @@ export const PlatformWhereInputSchema: z.ZodType<Prisma.PlatformWhereInput> = z.
   NOT: z.union([ z.lazy(() => PlatformWhereInputSchema),z.lazy(() => PlatformWhereInputSchema).array() ]).optional(),
   id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   type: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  streamer_id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  streamer: z.union([ z.lazy(() => StreamerRelationFilterSchema),z.lazy(() => StreamerWhereInputSchema) ]).optional(),
+  Streamer: z.lazy(() => StreamerListRelationFilterSchema).optional()
 }).strict();
 
 export const PlatformOrderByWithRelationInputSchema: z.ZodType<Prisma.PlatformOrderByWithRelationInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
   type: z.lazy(() => SortOrderSchema).optional(),
-  streamer_id: z.lazy(() => SortOrderSchema).optional(),
-  streamer: z.lazy(() => StreamerOrderByWithRelationInputSchema).optional()
+  Streamer: z.lazy(() => StreamerOrderByRelationAggregateInputSchema).optional()
 }).strict();
 
 export const PlatformWhereUniqueInputSchema: z.ZodType<Prisma.PlatformWhereUniqueInput> = z.object({
@@ -293,7 +335,6 @@ export const PlatformWhereUniqueInputSchema: z.ZodType<Prisma.PlatformWhereUniqu
 export const PlatformOrderByWithAggregationInputSchema: z.ZodType<Prisma.PlatformOrderByWithAggregationInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
   type: z.lazy(() => SortOrderSchema).optional(),
-  streamer_id: z.lazy(() => SortOrderSchema).optional(),
   _count: z.lazy(() => PlatformCountOrderByAggregateInputSchema).optional(),
   _max: z.lazy(() => PlatformMaxOrderByAggregateInputSchema).optional(),
   _min: z.lazy(() => PlatformMinOrderByAggregateInputSchema).optional()
@@ -305,7 +346,6 @@ export const PlatformScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.Plat
   NOT: z.union([ z.lazy(() => PlatformScalarWhereWithAggregatesInputSchema),z.lazy(() => PlatformScalarWhereWithAggregatesInputSchema).array() ]).optional(),
   id: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   type: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-  streamer_id: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
 }).strict();
 
 export const UpvoteWhereInputSchema: z.ZodType<Prisma.UpvoteWhereInput> = z.object({
@@ -313,26 +353,29 @@ export const UpvoteWhereInputSchema: z.ZodType<Prisma.UpvoteWhereInput> = z.obje
   OR: z.lazy(() => UpvoteWhereInputSchema).array().optional(),
   NOT: z.union([ z.lazy(() => UpvoteWhereInputSchema),z.lazy(() => UpvoteWhereInputSchema).array() ]).optional(),
   id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  user_id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  streamer_id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  streamer: z.union([ z.lazy(() => StreamerRelationFilterSchema),z.lazy(() => StreamerWhereInputSchema) ]).optional(),
+  streamerId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  userId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  Streamer: z.union([ z.lazy(() => StreamerRelationFilterSchema),z.lazy(() => StreamerWhereInputSchema) ]).optional(),
+  User: z.union([ z.lazy(() => UserRelationFilterSchema),z.lazy(() => UserWhereInputSchema) ]).optional(),
 }).strict();
 
 export const UpvoteOrderByWithRelationInputSchema: z.ZodType<Prisma.UpvoteOrderByWithRelationInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
-  user_id: z.lazy(() => SortOrderSchema).optional(),
-  streamer_id: z.lazy(() => SortOrderSchema).optional(),
-  streamer: z.lazy(() => StreamerOrderByWithRelationInputSchema).optional()
+  streamerId: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional(),
+  Streamer: z.lazy(() => StreamerOrderByWithRelationInputSchema).optional(),
+  User: z.lazy(() => UserOrderByWithRelationInputSchema).optional()
 }).strict();
 
 export const UpvoteWhereUniqueInputSchema: z.ZodType<Prisma.UpvoteWhereUniqueInput> = z.object({
-  id: z.string().uuid().optional()
+  id: z.string().uuid().optional(),
+  userAndStreamerId: z.lazy(() => UpvoteUserAndStreamerIdCompoundUniqueInputSchema).optional()
 }).strict();
 
 export const UpvoteOrderByWithAggregationInputSchema: z.ZodType<Prisma.UpvoteOrderByWithAggregationInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
-  user_id: z.lazy(() => SortOrderSchema).optional(),
-  streamer_id: z.lazy(() => SortOrderSchema).optional(),
+  streamerId: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional(),
   _count: z.lazy(() => UpvoteCountOrderByAggregateInputSchema).optional(),
   _max: z.lazy(() => UpvoteMaxOrderByAggregateInputSchema).optional(),
   _min: z.lazy(() => UpvoteMinOrderByAggregateInputSchema).optional()
@@ -343,8 +386,8 @@ export const UpvoteScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.Upvote
   OR: z.lazy(() => UpvoteScalarWhereWithAggregatesInputSchema).array().optional(),
   NOT: z.union([ z.lazy(() => UpvoteScalarWhereWithAggregatesInputSchema),z.lazy(() => UpvoteScalarWhereWithAggregatesInputSchema).array() ]).optional(),
   id: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-  user_id: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-  streamer_id: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  streamerId: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  userId: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
 }).strict();
 
 export const DownvoteWhereInputSchema: z.ZodType<Prisma.DownvoteWhereInput> = z.object({
@@ -352,26 +395,29 @@ export const DownvoteWhereInputSchema: z.ZodType<Prisma.DownvoteWhereInput> = z.
   OR: z.lazy(() => DownvoteWhereInputSchema).array().optional(),
   NOT: z.union([ z.lazy(() => DownvoteWhereInputSchema),z.lazy(() => DownvoteWhereInputSchema).array() ]).optional(),
   id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  user_id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  streamer_id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  streamer: z.union([ z.lazy(() => StreamerRelationFilterSchema),z.lazy(() => StreamerWhereInputSchema) ]).optional(),
+  streamerId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  userId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  Streamer: z.union([ z.lazy(() => StreamerRelationFilterSchema),z.lazy(() => StreamerWhereInputSchema) ]).optional(),
+  User: z.union([ z.lazy(() => UserRelationFilterSchema),z.lazy(() => UserWhereInputSchema) ]).optional(),
 }).strict();
 
 export const DownvoteOrderByWithRelationInputSchema: z.ZodType<Prisma.DownvoteOrderByWithRelationInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
-  user_id: z.lazy(() => SortOrderSchema).optional(),
-  streamer_id: z.lazy(() => SortOrderSchema).optional(),
-  streamer: z.lazy(() => StreamerOrderByWithRelationInputSchema).optional()
+  streamerId: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional(),
+  Streamer: z.lazy(() => StreamerOrderByWithRelationInputSchema).optional(),
+  User: z.lazy(() => UserOrderByWithRelationInputSchema).optional()
 }).strict();
 
 export const DownvoteWhereUniqueInputSchema: z.ZodType<Prisma.DownvoteWhereUniqueInput> = z.object({
-  id: z.string().uuid().optional()
+  id: z.string().uuid().optional(),
+  userAndStreamerId: z.lazy(() => DownvoteUserAndStreamerIdCompoundUniqueInputSchema).optional()
 }).strict();
 
 export const DownvoteOrderByWithAggregationInputSchema: z.ZodType<Prisma.DownvoteOrderByWithAggregationInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
-  user_id: z.lazy(() => SortOrderSchema).optional(),
-  streamer_id: z.lazy(() => SortOrderSchema).optional(),
+  streamerId: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional(),
   _count: z.lazy(() => DownvoteCountOrderByAggregateInputSchema).optional(),
   _max: z.lazy(() => DownvoteMaxOrderByAggregateInputSchema).optional(),
   _min: z.lazy(() => DownvoteMinOrderByAggregateInputSchema).optional()
@@ -382,24 +428,32 @@ export const DownvoteScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.Down
   OR: z.lazy(() => DownvoteScalarWhereWithAggregatesInputSchema).array().optional(),
   NOT: z.union([ z.lazy(() => DownvoteScalarWhereWithAggregatesInputSchema),z.lazy(() => DownvoteScalarWhereWithAggregatesInputSchema).array() ]).optional(),
   id: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-  user_id: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-  streamer_id: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  streamerId: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  userId: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
 }).strict();
 
 export const UserCreateInputSchema: z.ZodType<Prisma.UserCreateInput> = z.object({
-  id: z.string().uuid().optional()
+  id: z.string().uuid().optional(),
+  Upvote: z.lazy(() => UpvoteCreateNestedManyWithoutUserInputSchema).optional(),
+  Downvote: z.lazy(() => DownvoteCreateNestedManyWithoutUserInputSchema).optional()
 }).strict();
 
 export const UserUncheckedCreateInputSchema: z.ZodType<Prisma.UserUncheckedCreateInput> = z.object({
-  id: z.string().uuid().optional()
+  id: z.string().uuid().optional(),
+  Upvote: z.lazy(() => UpvoteUncheckedCreateNestedManyWithoutUserInputSchema).optional(),
+  Downvote: z.lazy(() => DownvoteUncheckedCreateNestedManyWithoutUserInputSchema).optional()
 }).strict();
 
 export const UserUpdateInputSchema: z.ZodType<Prisma.UserUpdateInput> = z.object({
   id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  Upvote: z.lazy(() => UpvoteUpdateManyWithoutUserNestedInputSchema).optional(),
+  Downvote: z.lazy(() => DownvoteUpdateManyWithoutUserNestedInputSchema).optional()
 }).strict();
 
 export const UserUncheckedUpdateInputSchema: z.ZodType<Prisma.UserUncheckedUpdateInput> = z.object({
   id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  Upvote: z.lazy(() => UpvoteUncheckedUpdateManyWithoutUserNestedInputSchema).optional(),
+  Downvote: z.lazy(() => DownvoteUncheckedUpdateManyWithoutUserNestedInputSchema).optional()
 }).strict();
 
 export const UserUpdateManyMutationInputSchema: z.ZodType<Prisma.UserUpdateManyMutationInput> = z.object({
@@ -414,36 +468,36 @@ export const StreamerCreateInputSchema: z.ZodType<Prisma.StreamerCreateInput> = 
   id: z.string().uuid().optional(),
   name: z.string(),
   description: z.string().optional().nullable(),
+  Platform: z.lazy(() => PlatformCreateNestedOneWithoutStreamerInputSchema),
   Upvote: z.lazy(() => UpvoteCreateNestedManyWithoutStreamerInputSchema).optional(),
-  Downvote: z.lazy(() => DownvoteCreateNestedManyWithoutStreamerInputSchema).optional(),
-  Platform: z.lazy(() => PlatformCreateNestedManyWithoutStreamerInputSchema).optional()
+  Downvote: z.lazy(() => DownvoteCreateNestedManyWithoutStreamerInputSchema).optional()
 }).strict();
 
 export const StreamerUncheckedCreateInputSchema: z.ZodType<Prisma.StreamerUncheckedCreateInput> = z.object({
   id: z.string().uuid().optional(),
   name: z.string(),
   description: z.string().optional().nullable(),
+  platformId: z.string(),
   Upvote: z.lazy(() => UpvoteUncheckedCreateNestedManyWithoutStreamerInputSchema).optional(),
-  Downvote: z.lazy(() => DownvoteUncheckedCreateNestedManyWithoutStreamerInputSchema).optional(),
-  Platform: z.lazy(() => PlatformUncheckedCreateNestedManyWithoutStreamerInputSchema).optional()
+  Downvote: z.lazy(() => DownvoteUncheckedCreateNestedManyWithoutStreamerInputSchema).optional()
 }).strict();
 
 export const StreamerUpdateInputSchema: z.ZodType<Prisma.StreamerUpdateInput> = z.object({
   id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  Platform: z.lazy(() => PlatformUpdateOneRequiredWithoutStreamerNestedInputSchema).optional(),
   Upvote: z.lazy(() => UpvoteUpdateManyWithoutStreamerNestedInputSchema).optional(),
-  Downvote: z.lazy(() => DownvoteUpdateManyWithoutStreamerNestedInputSchema).optional(),
-  Platform: z.lazy(() => PlatformUpdateManyWithoutStreamerNestedInputSchema).optional()
+  Downvote: z.lazy(() => DownvoteUpdateManyWithoutStreamerNestedInputSchema).optional()
 }).strict();
 
 export const StreamerUncheckedUpdateInputSchema: z.ZodType<Prisma.StreamerUncheckedUpdateInput> = z.object({
   id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  platformId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   Upvote: z.lazy(() => UpvoteUncheckedUpdateManyWithoutStreamerNestedInputSchema).optional(),
-  Downvote: z.lazy(() => DownvoteUncheckedUpdateManyWithoutStreamerNestedInputSchema).optional(),
-  Platform: z.lazy(() => PlatformUncheckedUpdateManyWithoutStreamerNestedInputSchema).optional()
+  Downvote: z.lazy(() => DownvoteUncheckedUpdateManyWithoutStreamerNestedInputSchema).optional()
 }).strict();
 
 export const StreamerUpdateManyMutationInputSchema: z.ZodType<Prisma.StreamerUpdateManyMutationInput> = z.object({
@@ -456,30 +510,31 @@ export const StreamerUncheckedUpdateManyInputSchema: z.ZodType<Prisma.StreamerUn
   id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  platformId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const PlatformCreateInputSchema: z.ZodType<Prisma.PlatformCreateInput> = z.object({
   id: z.string().uuid().optional(),
   type: z.string(),
-  streamer: z.lazy(() => StreamerCreateNestedOneWithoutPlatformInputSchema)
+  Streamer: z.lazy(() => StreamerCreateNestedManyWithoutPlatformInputSchema).optional()
 }).strict();
 
 export const PlatformUncheckedCreateInputSchema: z.ZodType<Prisma.PlatformUncheckedCreateInput> = z.object({
   id: z.string().uuid().optional(),
   type: z.string(),
-  streamer_id: z.string()
+  Streamer: z.lazy(() => StreamerUncheckedCreateNestedManyWithoutPlatformInputSchema).optional()
 }).strict();
 
 export const PlatformUpdateInputSchema: z.ZodType<Prisma.PlatformUpdateInput> = z.object({
   id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   type: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  streamer: z.lazy(() => StreamerUpdateOneRequiredWithoutPlatformNestedInputSchema).optional()
+  Streamer: z.lazy(() => StreamerUpdateManyWithoutPlatformNestedInputSchema).optional()
 }).strict();
 
 export const PlatformUncheckedUpdateInputSchema: z.ZodType<Prisma.PlatformUncheckedUpdateInput> = z.object({
   id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   type: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  streamer_id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  Streamer: z.lazy(() => StreamerUncheckedUpdateManyWithoutPlatformNestedInputSchema).optional()
 }).strict();
 
 export const PlatformUpdateManyMutationInputSchema: z.ZodType<Prisma.PlatformUpdateManyMutationInput> = z.object({
@@ -490,77 +545,74 @@ export const PlatformUpdateManyMutationInputSchema: z.ZodType<Prisma.PlatformUpd
 export const PlatformUncheckedUpdateManyInputSchema: z.ZodType<Prisma.PlatformUncheckedUpdateManyInput> = z.object({
   id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   type: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  streamer_id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const UpvoteCreateInputSchema: z.ZodType<Prisma.UpvoteCreateInput> = z.object({
   id: z.string().uuid().optional(),
-  user_id: z.string(),
-  streamer: z.lazy(() => StreamerCreateNestedOneWithoutUpvoteInputSchema)
+  Streamer: z.lazy(() => StreamerCreateNestedOneWithoutUpvoteInputSchema),
+  User: z.lazy(() => UserCreateNestedOneWithoutUpvoteInputSchema)
 }).strict();
 
 export const UpvoteUncheckedCreateInputSchema: z.ZodType<Prisma.UpvoteUncheckedCreateInput> = z.object({
   id: z.string().uuid().optional(),
-  user_id: z.string(),
-  streamer_id: z.string()
+  streamerId: z.string(),
+  userId: z.string()
 }).strict();
 
 export const UpvoteUpdateInputSchema: z.ZodType<Prisma.UpvoteUpdateInput> = z.object({
   id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  user_id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  streamer: z.lazy(() => StreamerUpdateOneRequiredWithoutUpvoteNestedInputSchema).optional()
+  Streamer: z.lazy(() => StreamerUpdateOneRequiredWithoutUpvoteNestedInputSchema).optional(),
+  User: z.lazy(() => UserUpdateOneRequiredWithoutUpvoteNestedInputSchema).optional()
 }).strict();
 
 export const UpvoteUncheckedUpdateInputSchema: z.ZodType<Prisma.UpvoteUncheckedUpdateInput> = z.object({
   id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  user_id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  streamer_id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  streamerId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const UpvoteUpdateManyMutationInputSchema: z.ZodType<Prisma.UpvoteUpdateManyMutationInput> = z.object({
   id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  user_id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const UpvoteUncheckedUpdateManyInputSchema: z.ZodType<Prisma.UpvoteUncheckedUpdateManyInput> = z.object({
   id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  user_id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  streamer_id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  streamerId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const DownvoteCreateInputSchema: z.ZodType<Prisma.DownvoteCreateInput> = z.object({
   id: z.string().uuid().optional(),
-  user_id: z.string(),
-  streamer: z.lazy(() => StreamerCreateNestedOneWithoutDownvoteInputSchema)
+  Streamer: z.lazy(() => StreamerCreateNestedOneWithoutDownvoteInputSchema),
+  User: z.lazy(() => UserCreateNestedOneWithoutDownvoteInputSchema)
 }).strict();
 
 export const DownvoteUncheckedCreateInputSchema: z.ZodType<Prisma.DownvoteUncheckedCreateInput> = z.object({
   id: z.string().uuid().optional(),
-  user_id: z.string(),
-  streamer_id: z.string()
+  streamerId: z.string(),
+  userId: z.string()
 }).strict();
 
 export const DownvoteUpdateInputSchema: z.ZodType<Prisma.DownvoteUpdateInput> = z.object({
   id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  user_id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  streamer: z.lazy(() => StreamerUpdateOneRequiredWithoutDownvoteNestedInputSchema).optional()
+  Streamer: z.lazy(() => StreamerUpdateOneRequiredWithoutDownvoteNestedInputSchema).optional(),
+  User: z.lazy(() => UserUpdateOneRequiredWithoutDownvoteNestedInputSchema).optional()
 }).strict();
 
 export const DownvoteUncheckedUpdateInputSchema: z.ZodType<Prisma.DownvoteUncheckedUpdateInput> = z.object({
   id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  user_id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  streamer_id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  streamerId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const DownvoteUpdateManyMutationInputSchema: z.ZodType<Prisma.DownvoteUpdateManyMutationInput> = z.object({
   id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  user_id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const DownvoteUncheckedUpdateManyInputSchema: z.ZodType<Prisma.DownvoteUncheckedUpdateManyInput> = z.object({
   id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  user_id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  streamer_id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  streamerId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const StringFilterSchema: z.ZodType<Prisma.StringFilter> = z.object({
@@ -575,6 +627,26 @@ export const StringFilterSchema: z.ZodType<Prisma.StringFilter> = z.object({
   startsWith: z.string().optional(),
   endsWith: z.string().optional(),
   not: z.union([ z.string(),z.lazy(() => NestedStringFilterSchema) ]).optional(),
+}).strict();
+
+export const UpvoteListRelationFilterSchema: z.ZodType<Prisma.UpvoteListRelationFilter> = z.object({
+  every: z.lazy(() => UpvoteWhereInputSchema).optional(),
+  some: z.lazy(() => UpvoteWhereInputSchema).optional(),
+  none: z.lazy(() => UpvoteWhereInputSchema).optional()
+}).strict();
+
+export const DownvoteListRelationFilterSchema: z.ZodType<Prisma.DownvoteListRelationFilter> = z.object({
+  every: z.lazy(() => DownvoteWhereInputSchema).optional(),
+  some: z.lazy(() => DownvoteWhereInputSchema).optional(),
+  none: z.lazy(() => DownvoteWhereInputSchema).optional()
+}).strict();
+
+export const UpvoteOrderByRelationAggregateInputSchema: z.ZodType<Prisma.UpvoteOrderByRelationAggregateInput> = z.object({
+  _count: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const DownvoteOrderByRelationAggregateInputSchema: z.ZodType<Prisma.DownvoteOrderByRelationAggregateInput> = z.object({
+  _count: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
 export const UserCountOrderByAggregateInputSchema: z.ZodType<Prisma.UserCountOrderByAggregateInput> = z.object({
@@ -620,22 +692,9 @@ export const StringNullableFilterSchema: z.ZodType<Prisma.StringNullableFilter> 
   not: z.union([ z.string(),z.lazy(() => NestedStringNullableFilterSchema) ]).optional().nullable(),
 }).strict();
 
-export const UpvoteListRelationFilterSchema: z.ZodType<Prisma.UpvoteListRelationFilter> = z.object({
-  every: z.lazy(() => UpvoteWhereInputSchema).optional(),
-  some: z.lazy(() => UpvoteWhereInputSchema).optional(),
-  none: z.lazy(() => UpvoteWhereInputSchema).optional()
-}).strict();
-
-export const DownvoteListRelationFilterSchema: z.ZodType<Prisma.DownvoteListRelationFilter> = z.object({
-  every: z.lazy(() => DownvoteWhereInputSchema).optional(),
-  some: z.lazy(() => DownvoteWhereInputSchema).optional(),
-  none: z.lazy(() => DownvoteWhereInputSchema).optional()
-}).strict();
-
-export const PlatformListRelationFilterSchema: z.ZodType<Prisma.PlatformListRelationFilter> = z.object({
-  every: z.lazy(() => PlatformWhereInputSchema).optional(),
-  some: z.lazy(() => PlatformWhereInputSchema).optional(),
-  none: z.lazy(() => PlatformWhereInputSchema).optional()
+export const PlatformRelationFilterSchema: z.ZodType<Prisma.PlatformRelationFilter> = z.object({
+  is: z.lazy(() => PlatformWhereInputSchema).optional().nullable(),
+  isNot: z.lazy(() => PlatformWhereInputSchema).optional().nullable()
 }).strict();
 
 export const SortOrderInputSchema: z.ZodType<Prisma.SortOrderInput> = z.object({
@@ -643,34 +702,25 @@ export const SortOrderInputSchema: z.ZodType<Prisma.SortOrderInput> = z.object({
   nulls: z.lazy(() => NullsOrderSchema).optional()
 }).strict();
 
-export const UpvoteOrderByRelationAggregateInputSchema: z.ZodType<Prisma.UpvoteOrderByRelationAggregateInput> = z.object({
-  _count: z.lazy(() => SortOrderSchema).optional()
-}).strict();
-
-export const DownvoteOrderByRelationAggregateInputSchema: z.ZodType<Prisma.DownvoteOrderByRelationAggregateInput> = z.object({
-  _count: z.lazy(() => SortOrderSchema).optional()
-}).strict();
-
-export const PlatformOrderByRelationAggregateInputSchema: z.ZodType<Prisma.PlatformOrderByRelationAggregateInput> = z.object({
-  _count: z.lazy(() => SortOrderSchema).optional()
-}).strict();
-
 export const StreamerCountOrderByAggregateInputSchema: z.ZodType<Prisma.StreamerCountOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
   name: z.lazy(() => SortOrderSchema).optional(),
-  description: z.lazy(() => SortOrderSchema).optional()
+  description: z.lazy(() => SortOrderSchema).optional(),
+  platformId: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
 export const StreamerMaxOrderByAggregateInputSchema: z.ZodType<Prisma.StreamerMaxOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
   name: z.lazy(() => SortOrderSchema).optional(),
-  description: z.lazy(() => SortOrderSchema).optional()
+  description: z.lazy(() => SortOrderSchema).optional(),
+  platformId: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
 export const StreamerMinOrderByAggregateInputSchema: z.ZodType<Prisma.StreamerMinOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
   name: z.lazy(() => SortOrderSchema).optional(),
-  description: z.lazy(() => SortOrderSchema).optional()
+  description: z.lazy(() => SortOrderSchema).optional(),
+  platformId: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
 export const StringNullableWithAggregatesFilterSchema: z.ZodType<Prisma.StringNullableWithAggregatesFilter> = z.object({
@@ -690,67 +740,171 @@ export const StringNullableWithAggregatesFilterSchema: z.ZodType<Prisma.StringNu
   _max: z.lazy(() => NestedStringNullableFilterSchema).optional()
 }).strict();
 
+export const StreamerListRelationFilterSchema: z.ZodType<Prisma.StreamerListRelationFilter> = z.object({
+  every: z.lazy(() => StreamerWhereInputSchema).optional(),
+  some: z.lazy(() => StreamerWhereInputSchema).optional(),
+  none: z.lazy(() => StreamerWhereInputSchema).optional()
+}).strict();
+
+export const StreamerOrderByRelationAggregateInputSchema: z.ZodType<Prisma.StreamerOrderByRelationAggregateInput> = z.object({
+  _count: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const PlatformCountOrderByAggregateInputSchema: z.ZodType<Prisma.PlatformCountOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  type: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const PlatformMaxOrderByAggregateInputSchema: z.ZodType<Prisma.PlatformMaxOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  type: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const PlatformMinOrderByAggregateInputSchema: z.ZodType<Prisma.PlatformMinOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  type: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
 export const StreamerRelationFilterSchema: z.ZodType<Prisma.StreamerRelationFilter> = z.object({
   is: z.lazy(() => StreamerWhereInputSchema).optional().nullable(),
   isNot: z.lazy(() => StreamerWhereInputSchema).optional().nullable()
 }).strict();
 
-export const PlatformCountOrderByAggregateInputSchema: z.ZodType<Prisma.PlatformCountOrderByAggregateInput> = z.object({
-  id: z.lazy(() => SortOrderSchema).optional(),
-  type: z.lazy(() => SortOrderSchema).optional(),
-  streamer_id: z.lazy(() => SortOrderSchema).optional()
+export const UserRelationFilterSchema: z.ZodType<Prisma.UserRelationFilter> = z.object({
+  is: z.lazy(() => UserWhereInputSchema).optional().nullable(),
+  isNot: z.lazy(() => UserWhereInputSchema).optional().nullable()
 }).strict();
 
-export const PlatformMaxOrderByAggregateInputSchema: z.ZodType<Prisma.PlatformMaxOrderByAggregateInput> = z.object({
-  id: z.lazy(() => SortOrderSchema).optional(),
-  type: z.lazy(() => SortOrderSchema).optional(),
-  streamer_id: z.lazy(() => SortOrderSchema).optional()
-}).strict();
-
-export const PlatformMinOrderByAggregateInputSchema: z.ZodType<Prisma.PlatformMinOrderByAggregateInput> = z.object({
-  id: z.lazy(() => SortOrderSchema).optional(),
-  type: z.lazy(() => SortOrderSchema).optional(),
-  streamer_id: z.lazy(() => SortOrderSchema).optional()
+export const UpvoteUserAndStreamerIdCompoundUniqueInputSchema: z.ZodType<Prisma.UpvoteUserAndStreamerIdCompoundUniqueInput> = z.object({
+  userId: z.string(),
+  streamerId: z.string()
 }).strict();
 
 export const UpvoteCountOrderByAggregateInputSchema: z.ZodType<Prisma.UpvoteCountOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
-  user_id: z.lazy(() => SortOrderSchema).optional(),
-  streamer_id: z.lazy(() => SortOrderSchema).optional()
+  streamerId: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
 export const UpvoteMaxOrderByAggregateInputSchema: z.ZodType<Prisma.UpvoteMaxOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
-  user_id: z.lazy(() => SortOrderSchema).optional(),
-  streamer_id: z.lazy(() => SortOrderSchema).optional()
+  streamerId: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
 export const UpvoteMinOrderByAggregateInputSchema: z.ZodType<Prisma.UpvoteMinOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
-  user_id: z.lazy(() => SortOrderSchema).optional(),
-  streamer_id: z.lazy(() => SortOrderSchema).optional()
+  streamerId: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const DownvoteUserAndStreamerIdCompoundUniqueInputSchema: z.ZodType<Prisma.DownvoteUserAndStreamerIdCompoundUniqueInput> = z.object({
+  userId: z.string(),
+  streamerId: z.string()
 }).strict();
 
 export const DownvoteCountOrderByAggregateInputSchema: z.ZodType<Prisma.DownvoteCountOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
-  user_id: z.lazy(() => SortOrderSchema).optional(),
-  streamer_id: z.lazy(() => SortOrderSchema).optional()
+  streamerId: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
 export const DownvoteMaxOrderByAggregateInputSchema: z.ZodType<Prisma.DownvoteMaxOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
-  user_id: z.lazy(() => SortOrderSchema).optional(),
-  streamer_id: z.lazy(() => SortOrderSchema).optional()
+  streamerId: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
 export const DownvoteMinOrderByAggregateInputSchema: z.ZodType<Prisma.DownvoteMinOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
-  user_id: z.lazy(() => SortOrderSchema).optional(),
-  streamer_id: z.lazy(() => SortOrderSchema).optional()
+  streamerId: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const UpvoteCreateNestedManyWithoutUserInputSchema: z.ZodType<Prisma.UpvoteCreateNestedManyWithoutUserInput> = z.object({
+  create: z.union([ z.lazy(() => UpvoteCreateWithoutUserInputSchema),z.lazy(() => UpvoteCreateWithoutUserInputSchema).array(),z.lazy(() => UpvoteUncheckedCreateWithoutUserInputSchema),z.lazy(() => UpvoteUncheckedCreateWithoutUserInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => UpvoteCreateOrConnectWithoutUserInputSchema),z.lazy(() => UpvoteCreateOrConnectWithoutUserInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => UpvoteWhereUniqueInputSchema),z.lazy(() => UpvoteWhereUniqueInputSchema).array() ]).optional(),
+}).strict();
+
+export const DownvoteCreateNestedManyWithoutUserInputSchema: z.ZodType<Prisma.DownvoteCreateNestedManyWithoutUserInput> = z.object({
+  create: z.union([ z.lazy(() => DownvoteCreateWithoutUserInputSchema),z.lazy(() => DownvoteCreateWithoutUserInputSchema).array(),z.lazy(() => DownvoteUncheckedCreateWithoutUserInputSchema),z.lazy(() => DownvoteUncheckedCreateWithoutUserInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => DownvoteCreateOrConnectWithoutUserInputSchema),z.lazy(() => DownvoteCreateOrConnectWithoutUserInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => DownvoteWhereUniqueInputSchema),z.lazy(() => DownvoteWhereUniqueInputSchema).array() ]).optional(),
+}).strict();
+
+export const UpvoteUncheckedCreateNestedManyWithoutUserInputSchema: z.ZodType<Prisma.UpvoteUncheckedCreateNestedManyWithoutUserInput> = z.object({
+  create: z.union([ z.lazy(() => UpvoteCreateWithoutUserInputSchema),z.lazy(() => UpvoteCreateWithoutUserInputSchema).array(),z.lazy(() => UpvoteUncheckedCreateWithoutUserInputSchema),z.lazy(() => UpvoteUncheckedCreateWithoutUserInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => UpvoteCreateOrConnectWithoutUserInputSchema),z.lazy(() => UpvoteCreateOrConnectWithoutUserInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => UpvoteWhereUniqueInputSchema),z.lazy(() => UpvoteWhereUniqueInputSchema).array() ]).optional(),
+}).strict();
+
+export const DownvoteUncheckedCreateNestedManyWithoutUserInputSchema: z.ZodType<Prisma.DownvoteUncheckedCreateNestedManyWithoutUserInput> = z.object({
+  create: z.union([ z.lazy(() => DownvoteCreateWithoutUserInputSchema),z.lazy(() => DownvoteCreateWithoutUserInputSchema).array(),z.lazy(() => DownvoteUncheckedCreateWithoutUserInputSchema),z.lazy(() => DownvoteUncheckedCreateWithoutUserInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => DownvoteCreateOrConnectWithoutUserInputSchema),z.lazy(() => DownvoteCreateOrConnectWithoutUserInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => DownvoteWhereUniqueInputSchema),z.lazy(() => DownvoteWhereUniqueInputSchema).array() ]).optional(),
 }).strict();
 
 export const StringFieldUpdateOperationsInputSchema: z.ZodType<Prisma.StringFieldUpdateOperationsInput> = z.object({
   set: z.string().optional()
+}).strict();
+
+export const UpvoteUpdateManyWithoutUserNestedInputSchema: z.ZodType<Prisma.UpvoteUpdateManyWithoutUserNestedInput> = z.object({
+  create: z.union([ z.lazy(() => UpvoteCreateWithoutUserInputSchema),z.lazy(() => UpvoteCreateWithoutUserInputSchema).array(),z.lazy(() => UpvoteUncheckedCreateWithoutUserInputSchema),z.lazy(() => UpvoteUncheckedCreateWithoutUserInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => UpvoteCreateOrConnectWithoutUserInputSchema),z.lazy(() => UpvoteCreateOrConnectWithoutUserInputSchema).array() ]).optional(),
+  upsert: z.union([ z.lazy(() => UpvoteUpsertWithWhereUniqueWithoutUserInputSchema),z.lazy(() => UpvoteUpsertWithWhereUniqueWithoutUserInputSchema).array() ]).optional(),
+  set: z.union([ z.lazy(() => UpvoteWhereUniqueInputSchema),z.lazy(() => UpvoteWhereUniqueInputSchema).array() ]).optional(),
+  disconnect: z.union([ z.lazy(() => UpvoteWhereUniqueInputSchema),z.lazy(() => UpvoteWhereUniqueInputSchema).array() ]).optional(),
+  delete: z.union([ z.lazy(() => UpvoteWhereUniqueInputSchema),z.lazy(() => UpvoteWhereUniqueInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => UpvoteWhereUniqueInputSchema),z.lazy(() => UpvoteWhereUniqueInputSchema).array() ]).optional(),
+  update: z.union([ z.lazy(() => UpvoteUpdateWithWhereUniqueWithoutUserInputSchema),z.lazy(() => UpvoteUpdateWithWhereUniqueWithoutUserInputSchema).array() ]).optional(),
+  updateMany: z.union([ z.lazy(() => UpvoteUpdateManyWithWhereWithoutUserInputSchema),z.lazy(() => UpvoteUpdateManyWithWhereWithoutUserInputSchema).array() ]).optional(),
+  deleteMany: z.union([ z.lazy(() => UpvoteScalarWhereInputSchema),z.lazy(() => UpvoteScalarWhereInputSchema).array() ]).optional(),
+}).strict();
+
+export const DownvoteUpdateManyWithoutUserNestedInputSchema: z.ZodType<Prisma.DownvoteUpdateManyWithoutUserNestedInput> = z.object({
+  create: z.union([ z.lazy(() => DownvoteCreateWithoutUserInputSchema),z.lazy(() => DownvoteCreateWithoutUserInputSchema).array(),z.lazy(() => DownvoteUncheckedCreateWithoutUserInputSchema),z.lazy(() => DownvoteUncheckedCreateWithoutUserInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => DownvoteCreateOrConnectWithoutUserInputSchema),z.lazy(() => DownvoteCreateOrConnectWithoutUserInputSchema).array() ]).optional(),
+  upsert: z.union([ z.lazy(() => DownvoteUpsertWithWhereUniqueWithoutUserInputSchema),z.lazy(() => DownvoteUpsertWithWhereUniqueWithoutUserInputSchema).array() ]).optional(),
+  set: z.union([ z.lazy(() => DownvoteWhereUniqueInputSchema),z.lazy(() => DownvoteWhereUniqueInputSchema).array() ]).optional(),
+  disconnect: z.union([ z.lazy(() => DownvoteWhereUniqueInputSchema),z.lazy(() => DownvoteWhereUniqueInputSchema).array() ]).optional(),
+  delete: z.union([ z.lazy(() => DownvoteWhereUniqueInputSchema),z.lazy(() => DownvoteWhereUniqueInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => DownvoteWhereUniqueInputSchema),z.lazy(() => DownvoteWhereUniqueInputSchema).array() ]).optional(),
+  update: z.union([ z.lazy(() => DownvoteUpdateWithWhereUniqueWithoutUserInputSchema),z.lazy(() => DownvoteUpdateWithWhereUniqueWithoutUserInputSchema).array() ]).optional(),
+  updateMany: z.union([ z.lazy(() => DownvoteUpdateManyWithWhereWithoutUserInputSchema),z.lazy(() => DownvoteUpdateManyWithWhereWithoutUserInputSchema).array() ]).optional(),
+  deleteMany: z.union([ z.lazy(() => DownvoteScalarWhereInputSchema),z.lazy(() => DownvoteScalarWhereInputSchema).array() ]).optional(),
+}).strict();
+
+export const UpvoteUncheckedUpdateManyWithoutUserNestedInputSchema: z.ZodType<Prisma.UpvoteUncheckedUpdateManyWithoutUserNestedInput> = z.object({
+  create: z.union([ z.lazy(() => UpvoteCreateWithoutUserInputSchema),z.lazy(() => UpvoteCreateWithoutUserInputSchema).array(),z.lazy(() => UpvoteUncheckedCreateWithoutUserInputSchema),z.lazy(() => UpvoteUncheckedCreateWithoutUserInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => UpvoteCreateOrConnectWithoutUserInputSchema),z.lazy(() => UpvoteCreateOrConnectWithoutUserInputSchema).array() ]).optional(),
+  upsert: z.union([ z.lazy(() => UpvoteUpsertWithWhereUniqueWithoutUserInputSchema),z.lazy(() => UpvoteUpsertWithWhereUniqueWithoutUserInputSchema).array() ]).optional(),
+  set: z.union([ z.lazy(() => UpvoteWhereUniqueInputSchema),z.lazy(() => UpvoteWhereUniqueInputSchema).array() ]).optional(),
+  disconnect: z.union([ z.lazy(() => UpvoteWhereUniqueInputSchema),z.lazy(() => UpvoteWhereUniqueInputSchema).array() ]).optional(),
+  delete: z.union([ z.lazy(() => UpvoteWhereUniqueInputSchema),z.lazy(() => UpvoteWhereUniqueInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => UpvoteWhereUniqueInputSchema),z.lazy(() => UpvoteWhereUniqueInputSchema).array() ]).optional(),
+  update: z.union([ z.lazy(() => UpvoteUpdateWithWhereUniqueWithoutUserInputSchema),z.lazy(() => UpvoteUpdateWithWhereUniqueWithoutUserInputSchema).array() ]).optional(),
+  updateMany: z.union([ z.lazy(() => UpvoteUpdateManyWithWhereWithoutUserInputSchema),z.lazy(() => UpvoteUpdateManyWithWhereWithoutUserInputSchema).array() ]).optional(),
+  deleteMany: z.union([ z.lazy(() => UpvoteScalarWhereInputSchema),z.lazy(() => UpvoteScalarWhereInputSchema).array() ]).optional(),
+}).strict();
+
+export const DownvoteUncheckedUpdateManyWithoutUserNestedInputSchema: z.ZodType<Prisma.DownvoteUncheckedUpdateManyWithoutUserNestedInput> = z.object({
+  create: z.union([ z.lazy(() => DownvoteCreateWithoutUserInputSchema),z.lazy(() => DownvoteCreateWithoutUserInputSchema).array(),z.lazy(() => DownvoteUncheckedCreateWithoutUserInputSchema),z.lazy(() => DownvoteUncheckedCreateWithoutUserInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => DownvoteCreateOrConnectWithoutUserInputSchema),z.lazy(() => DownvoteCreateOrConnectWithoutUserInputSchema).array() ]).optional(),
+  upsert: z.union([ z.lazy(() => DownvoteUpsertWithWhereUniqueWithoutUserInputSchema),z.lazy(() => DownvoteUpsertWithWhereUniqueWithoutUserInputSchema).array() ]).optional(),
+  set: z.union([ z.lazy(() => DownvoteWhereUniqueInputSchema),z.lazy(() => DownvoteWhereUniqueInputSchema).array() ]).optional(),
+  disconnect: z.union([ z.lazy(() => DownvoteWhereUniqueInputSchema),z.lazy(() => DownvoteWhereUniqueInputSchema).array() ]).optional(),
+  delete: z.union([ z.lazy(() => DownvoteWhereUniqueInputSchema),z.lazy(() => DownvoteWhereUniqueInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => DownvoteWhereUniqueInputSchema),z.lazy(() => DownvoteWhereUniqueInputSchema).array() ]).optional(),
+  update: z.union([ z.lazy(() => DownvoteUpdateWithWhereUniqueWithoutUserInputSchema),z.lazy(() => DownvoteUpdateWithWhereUniqueWithoutUserInputSchema).array() ]).optional(),
+  updateMany: z.union([ z.lazy(() => DownvoteUpdateManyWithWhereWithoutUserInputSchema),z.lazy(() => DownvoteUpdateManyWithWhereWithoutUserInputSchema).array() ]).optional(),
+  deleteMany: z.union([ z.lazy(() => DownvoteScalarWhereInputSchema),z.lazy(() => DownvoteScalarWhereInputSchema).array() ]).optional(),
+}).strict();
+
+export const PlatformCreateNestedOneWithoutStreamerInputSchema: z.ZodType<Prisma.PlatformCreateNestedOneWithoutStreamerInput> = z.object({
+  create: z.union([ z.lazy(() => PlatformCreateWithoutStreamerInputSchema),z.lazy(() => PlatformUncheckedCreateWithoutStreamerInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => PlatformCreateOrConnectWithoutStreamerInputSchema).optional(),
+  connect: z.lazy(() => PlatformWhereUniqueInputSchema).optional()
 }).strict();
 
 export const UpvoteCreateNestedManyWithoutStreamerInputSchema: z.ZodType<Prisma.UpvoteCreateNestedManyWithoutStreamerInput> = z.object({
@@ -765,12 +919,6 @@ export const DownvoteCreateNestedManyWithoutStreamerInputSchema: z.ZodType<Prism
   connect: z.union([ z.lazy(() => DownvoteWhereUniqueInputSchema),z.lazy(() => DownvoteWhereUniqueInputSchema).array() ]).optional(),
 }).strict();
 
-export const PlatformCreateNestedManyWithoutStreamerInputSchema: z.ZodType<Prisma.PlatformCreateNestedManyWithoutStreamerInput> = z.object({
-  create: z.union([ z.lazy(() => PlatformCreateWithoutStreamerInputSchema),z.lazy(() => PlatformCreateWithoutStreamerInputSchema).array(),z.lazy(() => PlatformUncheckedCreateWithoutStreamerInputSchema),z.lazy(() => PlatformUncheckedCreateWithoutStreamerInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => PlatformCreateOrConnectWithoutStreamerInputSchema),z.lazy(() => PlatformCreateOrConnectWithoutStreamerInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => PlatformWhereUniqueInputSchema),z.lazy(() => PlatformWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
-
 export const UpvoteUncheckedCreateNestedManyWithoutStreamerInputSchema: z.ZodType<Prisma.UpvoteUncheckedCreateNestedManyWithoutStreamerInput> = z.object({
   create: z.union([ z.lazy(() => UpvoteCreateWithoutStreamerInputSchema),z.lazy(() => UpvoteCreateWithoutStreamerInputSchema).array(),z.lazy(() => UpvoteUncheckedCreateWithoutStreamerInputSchema),z.lazy(() => UpvoteUncheckedCreateWithoutStreamerInputSchema).array() ]).optional(),
   connectOrCreate: z.union([ z.lazy(() => UpvoteCreateOrConnectWithoutStreamerInputSchema),z.lazy(() => UpvoteCreateOrConnectWithoutStreamerInputSchema).array() ]).optional(),
@@ -783,14 +931,16 @@ export const DownvoteUncheckedCreateNestedManyWithoutStreamerInputSchema: z.ZodT
   connect: z.union([ z.lazy(() => DownvoteWhereUniqueInputSchema),z.lazy(() => DownvoteWhereUniqueInputSchema).array() ]).optional(),
 }).strict();
 
-export const PlatformUncheckedCreateNestedManyWithoutStreamerInputSchema: z.ZodType<Prisma.PlatformUncheckedCreateNestedManyWithoutStreamerInput> = z.object({
-  create: z.union([ z.lazy(() => PlatformCreateWithoutStreamerInputSchema),z.lazy(() => PlatformCreateWithoutStreamerInputSchema).array(),z.lazy(() => PlatformUncheckedCreateWithoutStreamerInputSchema),z.lazy(() => PlatformUncheckedCreateWithoutStreamerInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => PlatformCreateOrConnectWithoutStreamerInputSchema),z.lazy(() => PlatformCreateOrConnectWithoutStreamerInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => PlatformWhereUniqueInputSchema),z.lazy(() => PlatformWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
-
 export const NullableStringFieldUpdateOperationsInputSchema: z.ZodType<Prisma.NullableStringFieldUpdateOperationsInput> = z.object({
   set: z.string().optional().nullable()
+}).strict();
+
+export const PlatformUpdateOneRequiredWithoutStreamerNestedInputSchema: z.ZodType<Prisma.PlatformUpdateOneRequiredWithoutStreamerNestedInput> = z.object({
+  create: z.union([ z.lazy(() => PlatformCreateWithoutStreamerInputSchema),z.lazy(() => PlatformUncheckedCreateWithoutStreamerInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => PlatformCreateOrConnectWithoutStreamerInputSchema).optional(),
+  upsert: z.lazy(() => PlatformUpsertWithoutStreamerInputSchema).optional(),
+  connect: z.lazy(() => PlatformWhereUniqueInputSchema).optional(),
+  update: z.union([ z.lazy(() => PlatformUpdateWithoutStreamerInputSchema),z.lazy(() => PlatformUncheckedUpdateWithoutStreamerInputSchema) ]).optional(),
 }).strict();
 
 export const UpvoteUpdateManyWithoutStreamerNestedInputSchema: z.ZodType<Prisma.UpvoteUpdateManyWithoutStreamerNestedInput> = z.object({
@@ -819,19 +969,6 @@ export const DownvoteUpdateManyWithoutStreamerNestedInputSchema: z.ZodType<Prism
   deleteMany: z.union([ z.lazy(() => DownvoteScalarWhereInputSchema),z.lazy(() => DownvoteScalarWhereInputSchema).array() ]).optional(),
 }).strict();
 
-export const PlatformUpdateManyWithoutStreamerNestedInputSchema: z.ZodType<Prisma.PlatformUpdateManyWithoutStreamerNestedInput> = z.object({
-  create: z.union([ z.lazy(() => PlatformCreateWithoutStreamerInputSchema),z.lazy(() => PlatformCreateWithoutStreamerInputSchema).array(),z.lazy(() => PlatformUncheckedCreateWithoutStreamerInputSchema),z.lazy(() => PlatformUncheckedCreateWithoutStreamerInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => PlatformCreateOrConnectWithoutStreamerInputSchema),z.lazy(() => PlatformCreateOrConnectWithoutStreamerInputSchema).array() ]).optional(),
-  upsert: z.union([ z.lazy(() => PlatformUpsertWithWhereUniqueWithoutStreamerInputSchema),z.lazy(() => PlatformUpsertWithWhereUniqueWithoutStreamerInputSchema).array() ]).optional(),
-  set: z.union([ z.lazy(() => PlatformWhereUniqueInputSchema),z.lazy(() => PlatformWhereUniqueInputSchema).array() ]).optional(),
-  disconnect: z.union([ z.lazy(() => PlatformWhereUniqueInputSchema),z.lazy(() => PlatformWhereUniqueInputSchema).array() ]).optional(),
-  delete: z.union([ z.lazy(() => PlatformWhereUniqueInputSchema),z.lazy(() => PlatformWhereUniqueInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => PlatformWhereUniqueInputSchema),z.lazy(() => PlatformWhereUniqueInputSchema).array() ]).optional(),
-  update: z.union([ z.lazy(() => PlatformUpdateWithWhereUniqueWithoutStreamerInputSchema),z.lazy(() => PlatformUpdateWithWhereUniqueWithoutStreamerInputSchema).array() ]).optional(),
-  updateMany: z.union([ z.lazy(() => PlatformUpdateManyWithWhereWithoutStreamerInputSchema),z.lazy(() => PlatformUpdateManyWithWhereWithoutStreamerInputSchema).array() ]).optional(),
-  deleteMany: z.union([ z.lazy(() => PlatformScalarWhereInputSchema),z.lazy(() => PlatformScalarWhereInputSchema).array() ]).optional(),
-}).strict();
-
 export const UpvoteUncheckedUpdateManyWithoutStreamerNestedInputSchema: z.ZodType<Prisma.UpvoteUncheckedUpdateManyWithoutStreamerNestedInput> = z.object({
   create: z.union([ z.lazy(() => UpvoteCreateWithoutStreamerInputSchema),z.lazy(() => UpvoteCreateWithoutStreamerInputSchema).array(),z.lazy(() => UpvoteUncheckedCreateWithoutStreamerInputSchema),z.lazy(() => UpvoteUncheckedCreateWithoutStreamerInputSchema).array() ]).optional(),
   connectOrCreate: z.union([ z.lazy(() => UpvoteCreateOrConnectWithoutStreamerInputSchema),z.lazy(() => UpvoteCreateOrConnectWithoutStreamerInputSchema).array() ]).optional(),
@@ -858,37 +995,54 @@ export const DownvoteUncheckedUpdateManyWithoutStreamerNestedInputSchema: z.ZodT
   deleteMany: z.union([ z.lazy(() => DownvoteScalarWhereInputSchema),z.lazy(() => DownvoteScalarWhereInputSchema).array() ]).optional(),
 }).strict();
 
-export const PlatformUncheckedUpdateManyWithoutStreamerNestedInputSchema: z.ZodType<Prisma.PlatformUncheckedUpdateManyWithoutStreamerNestedInput> = z.object({
-  create: z.union([ z.lazy(() => PlatformCreateWithoutStreamerInputSchema),z.lazy(() => PlatformCreateWithoutStreamerInputSchema).array(),z.lazy(() => PlatformUncheckedCreateWithoutStreamerInputSchema),z.lazy(() => PlatformUncheckedCreateWithoutStreamerInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => PlatformCreateOrConnectWithoutStreamerInputSchema),z.lazy(() => PlatformCreateOrConnectWithoutStreamerInputSchema).array() ]).optional(),
-  upsert: z.union([ z.lazy(() => PlatformUpsertWithWhereUniqueWithoutStreamerInputSchema),z.lazy(() => PlatformUpsertWithWhereUniqueWithoutStreamerInputSchema).array() ]).optional(),
-  set: z.union([ z.lazy(() => PlatformWhereUniqueInputSchema),z.lazy(() => PlatformWhereUniqueInputSchema).array() ]).optional(),
-  disconnect: z.union([ z.lazy(() => PlatformWhereUniqueInputSchema),z.lazy(() => PlatformWhereUniqueInputSchema).array() ]).optional(),
-  delete: z.union([ z.lazy(() => PlatformWhereUniqueInputSchema),z.lazy(() => PlatformWhereUniqueInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => PlatformWhereUniqueInputSchema),z.lazy(() => PlatformWhereUniqueInputSchema).array() ]).optional(),
-  update: z.union([ z.lazy(() => PlatformUpdateWithWhereUniqueWithoutStreamerInputSchema),z.lazy(() => PlatformUpdateWithWhereUniqueWithoutStreamerInputSchema).array() ]).optional(),
-  updateMany: z.union([ z.lazy(() => PlatformUpdateManyWithWhereWithoutStreamerInputSchema),z.lazy(() => PlatformUpdateManyWithWhereWithoutStreamerInputSchema).array() ]).optional(),
-  deleteMany: z.union([ z.lazy(() => PlatformScalarWhereInputSchema),z.lazy(() => PlatformScalarWhereInputSchema).array() ]).optional(),
+export const StreamerCreateNestedManyWithoutPlatformInputSchema: z.ZodType<Prisma.StreamerCreateNestedManyWithoutPlatformInput> = z.object({
+  create: z.union([ z.lazy(() => StreamerCreateWithoutPlatformInputSchema),z.lazy(() => StreamerCreateWithoutPlatformInputSchema).array(),z.lazy(() => StreamerUncheckedCreateWithoutPlatformInputSchema),z.lazy(() => StreamerUncheckedCreateWithoutPlatformInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => StreamerCreateOrConnectWithoutPlatformInputSchema),z.lazy(() => StreamerCreateOrConnectWithoutPlatformInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => StreamerWhereUniqueInputSchema),z.lazy(() => StreamerWhereUniqueInputSchema).array() ]).optional(),
 }).strict();
 
-export const StreamerCreateNestedOneWithoutPlatformInputSchema: z.ZodType<Prisma.StreamerCreateNestedOneWithoutPlatformInput> = z.object({
-  create: z.union([ z.lazy(() => StreamerCreateWithoutPlatformInputSchema),z.lazy(() => StreamerUncheckedCreateWithoutPlatformInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => StreamerCreateOrConnectWithoutPlatformInputSchema).optional(),
-  connect: z.lazy(() => StreamerWhereUniqueInputSchema).optional()
+export const StreamerUncheckedCreateNestedManyWithoutPlatformInputSchema: z.ZodType<Prisma.StreamerUncheckedCreateNestedManyWithoutPlatformInput> = z.object({
+  create: z.union([ z.lazy(() => StreamerCreateWithoutPlatformInputSchema),z.lazy(() => StreamerCreateWithoutPlatformInputSchema).array(),z.lazy(() => StreamerUncheckedCreateWithoutPlatformInputSchema),z.lazy(() => StreamerUncheckedCreateWithoutPlatformInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => StreamerCreateOrConnectWithoutPlatformInputSchema),z.lazy(() => StreamerCreateOrConnectWithoutPlatformInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => StreamerWhereUniqueInputSchema),z.lazy(() => StreamerWhereUniqueInputSchema).array() ]).optional(),
 }).strict();
 
-export const StreamerUpdateOneRequiredWithoutPlatformNestedInputSchema: z.ZodType<Prisma.StreamerUpdateOneRequiredWithoutPlatformNestedInput> = z.object({
-  create: z.union([ z.lazy(() => StreamerCreateWithoutPlatformInputSchema),z.lazy(() => StreamerUncheckedCreateWithoutPlatformInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => StreamerCreateOrConnectWithoutPlatformInputSchema).optional(),
-  upsert: z.lazy(() => StreamerUpsertWithoutPlatformInputSchema).optional(),
-  connect: z.lazy(() => StreamerWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => StreamerUpdateWithoutPlatformInputSchema),z.lazy(() => StreamerUncheckedUpdateWithoutPlatformInputSchema) ]).optional(),
+export const StreamerUpdateManyWithoutPlatformNestedInputSchema: z.ZodType<Prisma.StreamerUpdateManyWithoutPlatformNestedInput> = z.object({
+  create: z.union([ z.lazy(() => StreamerCreateWithoutPlatformInputSchema),z.lazy(() => StreamerCreateWithoutPlatformInputSchema).array(),z.lazy(() => StreamerUncheckedCreateWithoutPlatformInputSchema),z.lazy(() => StreamerUncheckedCreateWithoutPlatformInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => StreamerCreateOrConnectWithoutPlatformInputSchema),z.lazy(() => StreamerCreateOrConnectWithoutPlatformInputSchema).array() ]).optional(),
+  upsert: z.union([ z.lazy(() => StreamerUpsertWithWhereUniqueWithoutPlatformInputSchema),z.lazy(() => StreamerUpsertWithWhereUniqueWithoutPlatformInputSchema).array() ]).optional(),
+  set: z.union([ z.lazy(() => StreamerWhereUniqueInputSchema),z.lazy(() => StreamerWhereUniqueInputSchema).array() ]).optional(),
+  disconnect: z.union([ z.lazy(() => StreamerWhereUniqueInputSchema),z.lazy(() => StreamerWhereUniqueInputSchema).array() ]).optional(),
+  delete: z.union([ z.lazy(() => StreamerWhereUniqueInputSchema),z.lazy(() => StreamerWhereUniqueInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => StreamerWhereUniqueInputSchema),z.lazy(() => StreamerWhereUniqueInputSchema).array() ]).optional(),
+  update: z.union([ z.lazy(() => StreamerUpdateWithWhereUniqueWithoutPlatformInputSchema),z.lazy(() => StreamerUpdateWithWhereUniqueWithoutPlatformInputSchema).array() ]).optional(),
+  updateMany: z.union([ z.lazy(() => StreamerUpdateManyWithWhereWithoutPlatformInputSchema),z.lazy(() => StreamerUpdateManyWithWhereWithoutPlatformInputSchema).array() ]).optional(),
+  deleteMany: z.union([ z.lazy(() => StreamerScalarWhereInputSchema),z.lazy(() => StreamerScalarWhereInputSchema).array() ]).optional(),
+}).strict();
+
+export const StreamerUncheckedUpdateManyWithoutPlatformNestedInputSchema: z.ZodType<Prisma.StreamerUncheckedUpdateManyWithoutPlatformNestedInput> = z.object({
+  create: z.union([ z.lazy(() => StreamerCreateWithoutPlatformInputSchema),z.lazy(() => StreamerCreateWithoutPlatformInputSchema).array(),z.lazy(() => StreamerUncheckedCreateWithoutPlatformInputSchema),z.lazy(() => StreamerUncheckedCreateWithoutPlatformInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => StreamerCreateOrConnectWithoutPlatformInputSchema),z.lazy(() => StreamerCreateOrConnectWithoutPlatformInputSchema).array() ]).optional(),
+  upsert: z.union([ z.lazy(() => StreamerUpsertWithWhereUniqueWithoutPlatformInputSchema),z.lazy(() => StreamerUpsertWithWhereUniqueWithoutPlatformInputSchema).array() ]).optional(),
+  set: z.union([ z.lazy(() => StreamerWhereUniqueInputSchema),z.lazy(() => StreamerWhereUniqueInputSchema).array() ]).optional(),
+  disconnect: z.union([ z.lazy(() => StreamerWhereUniqueInputSchema),z.lazy(() => StreamerWhereUniqueInputSchema).array() ]).optional(),
+  delete: z.union([ z.lazy(() => StreamerWhereUniqueInputSchema),z.lazy(() => StreamerWhereUniqueInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => StreamerWhereUniqueInputSchema),z.lazy(() => StreamerWhereUniqueInputSchema).array() ]).optional(),
+  update: z.union([ z.lazy(() => StreamerUpdateWithWhereUniqueWithoutPlatformInputSchema),z.lazy(() => StreamerUpdateWithWhereUniqueWithoutPlatformInputSchema).array() ]).optional(),
+  updateMany: z.union([ z.lazy(() => StreamerUpdateManyWithWhereWithoutPlatformInputSchema),z.lazy(() => StreamerUpdateManyWithWhereWithoutPlatformInputSchema).array() ]).optional(),
+  deleteMany: z.union([ z.lazy(() => StreamerScalarWhereInputSchema),z.lazy(() => StreamerScalarWhereInputSchema).array() ]).optional(),
 }).strict();
 
 export const StreamerCreateNestedOneWithoutUpvoteInputSchema: z.ZodType<Prisma.StreamerCreateNestedOneWithoutUpvoteInput> = z.object({
   create: z.union([ z.lazy(() => StreamerCreateWithoutUpvoteInputSchema),z.lazy(() => StreamerUncheckedCreateWithoutUpvoteInputSchema) ]).optional(),
   connectOrCreate: z.lazy(() => StreamerCreateOrConnectWithoutUpvoteInputSchema).optional(),
   connect: z.lazy(() => StreamerWhereUniqueInputSchema).optional()
+}).strict();
+
+export const UserCreateNestedOneWithoutUpvoteInputSchema: z.ZodType<Prisma.UserCreateNestedOneWithoutUpvoteInput> = z.object({
+  create: z.union([ z.lazy(() => UserCreateWithoutUpvoteInputSchema),z.lazy(() => UserUncheckedCreateWithoutUpvoteInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => UserCreateOrConnectWithoutUpvoteInputSchema).optional(),
+  connect: z.lazy(() => UserWhereUniqueInputSchema).optional()
 }).strict();
 
 export const StreamerUpdateOneRequiredWithoutUpvoteNestedInputSchema: z.ZodType<Prisma.StreamerUpdateOneRequiredWithoutUpvoteNestedInput> = z.object({
@@ -899,10 +1053,24 @@ export const StreamerUpdateOneRequiredWithoutUpvoteNestedInputSchema: z.ZodType<
   update: z.union([ z.lazy(() => StreamerUpdateWithoutUpvoteInputSchema),z.lazy(() => StreamerUncheckedUpdateWithoutUpvoteInputSchema) ]).optional(),
 }).strict();
 
+export const UserUpdateOneRequiredWithoutUpvoteNestedInputSchema: z.ZodType<Prisma.UserUpdateOneRequiredWithoutUpvoteNestedInput> = z.object({
+  create: z.union([ z.lazy(() => UserCreateWithoutUpvoteInputSchema),z.lazy(() => UserUncheckedCreateWithoutUpvoteInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => UserCreateOrConnectWithoutUpvoteInputSchema).optional(),
+  upsert: z.lazy(() => UserUpsertWithoutUpvoteInputSchema).optional(),
+  connect: z.lazy(() => UserWhereUniqueInputSchema).optional(),
+  update: z.union([ z.lazy(() => UserUpdateWithoutUpvoteInputSchema),z.lazy(() => UserUncheckedUpdateWithoutUpvoteInputSchema) ]).optional(),
+}).strict();
+
 export const StreamerCreateNestedOneWithoutDownvoteInputSchema: z.ZodType<Prisma.StreamerCreateNestedOneWithoutDownvoteInput> = z.object({
   create: z.union([ z.lazy(() => StreamerCreateWithoutDownvoteInputSchema),z.lazy(() => StreamerUncheckedCreateWithoutDownvoteInputSchema) ]).optional(),
   connectOrCreate: z.lazy(() => StreamerCreateOrConnectWithoutDownvoteInputSchema).optional(),
   connect: z.lazy(() => StreamerWhereUniqueInputSchema).optional()
+}).strict();
+
+export const UserCreateNestedOneWithoutDownvoteInputSchema: z.ZodType<Prisma.UserCreateNestedOneWithoutDownvoteInput> = z.object({
+  create: z.union([ z.lazy(() => UserCreateWithoutDownvoteInputSchema),z.lazy(() => UserUncheckedCreateWithoutDownvoteInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => UserCreateOrConnectWithoutDownvoteInputSchema).optional(),
+  connect: z.lazy(() => UserWhereUniqueInputSchema).optional()
 }).strict();
 
 export const StreamerUpdateOneRequiredWithoutDownvoteNestedInputSchema: z.ZodType<Prisma.StreamerUpdateOneRequiredWithoutDownvoteNestedInput> = z.object({
@@ -911,6 +1079,14 @@ export const StreamerUpdateOneRequiredWithoutDownvoteNestedInputSchema: z.ZodTyp
   upsert: z.lazy(() => StreamerUpsertWithoutDownvoteInputSchema).optional(),
   connect: z.lazy(() => StreamerWhereUniqueInputSchema).optional(),
   update: z.union([ z.lazy(() => StreamerUpdateWithoutDownvoteInputSchema),z.lazy(() => StreamerUncheckedUpdateWithoutDownvoteInputSchema) ]).optional(),
+}).strict();
+
+export const UserUpdateOneRequiredWithoutDownvoteNestedInputSchema: z.ZodType<Prisma.UserUpdateOneRequiredWithoutDownvoteNestedInput> = z.object({
+  create: z.union([ z.lazy(() => UserCreateWithoutDownvoteInputSchema),z.lazy(() => UserUncheckedCreateWithoutDownvoteInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => UserCreateOrConnectWithoutDownvoteInputSchema).optional(),
+  upsert: z.lazy(() => UserUpsertWithoutDownvoteInputSchema).optional(),
+  connect: z.lazy(() => UserWhereUniqueInputSchema).optional(),
+  update: z.union([ z.lazy(() => UserUpdateWithoutDownvoteInputSchema),z.lazy(() => UserUncheckedUpdateWithoutDownvoteInputSchema) ]).optional(),
 }).strict();
 
 export const NestedStringFilterSchema: z.ZodType<Prisma.NestedStringFilter> = z.object({
@@ -997,34 +1173,84 @@ export const NestedIntNullableFilterSchema: z.ZodType<Prisma.NestedIntNullableFi
   not: z.union([ z.number(),z.lazy(() => NestedIntNullableFilterSchema) ]).optional().nullable(),
 }).strict();
 
-export const UpvoteCreateWithoutStreamerInputSchema: z.ZodType<Prisma.UpvoteCreateWithoutStreamerInput> = z.object({
+export const UpvoteCreateWithoutUserInputSchema: z.ZodType<Prisma.UpvoteCreateWithoutUserInput> = z.object({
   id: z.string().uuid().optional(),
-  user_id: z.string()
+  Streamer: z.lazy(() => StreamerCreateNestedOneWithoutUpvoteInputSchema)
 }).strict();
 
-export const UpvoteUncheckedCreateWithoutStreamerInputSchema: z.ZodType<Prisma.UpvoteUncheckedCreateWithoutStreamerInput> = z.object({
+export const UpvoteUncheckedCreateWithoutUserInputSchema: z.ZodType<Prisma.UpvoteUncheckedCreateWithoutUserInput> = z.object({
   id: z.string().uuid().optional(),
-  user_id: z.string()
+  streamerId: z.string()
 }).strict();
 
-export const UpvoteCreateOrConnectWithoutStreamerInputSchema: z.ZodType<Prisma.UpvoteCreateOrConnectWithoutStreamerInput> = z.object({
+export const UpvoteCreateOrConnectWithoutUserInputSchema: z.ZodType<Prisma.UpvoteCreateOrConnectWithoutUserInput> = z.object({
   where: z.lazy(() => UpvoteWhereUniqueInputSchema),
-  create: z.union([ z.lazy(() => UpvoteCreateWithoutStreamerInputSchema),z.lazy(() => UpvoteUncheckedCreateWithoutStreamerInputSchema) ]),
+  create: z.union([ z.lazy(() => UpvoteCreateWithoutUserInputSchema),z.lazy(() => UpvoteUncheckedCreateWithoutUserInputSchema) ]),
 }).strict();
 
-export const DownvoteCreateWithoutStreamerInputSchema: z.ZodType<Prisma.DownvoteCreateWithoutStreamerInput> = z.object({
+export const DownvoteCreateWithoutUserInputSchema: z.ZodType<Prisma.DownvoteCreateWithoutUserInput> = z.object({
   id: z.string().uuid().optional(),
-  user_id: z.string()
+  Streamer: z.lazy(() => StreamerCreateNestedOneWithoutDownvoteInputSchema)
 }).strict();
 
-export const DownvoteUncheckedCreateWithoutStreamerInputSchema: z.ZodType<Prisma.DownvoteUncheckedCreateWithoutStreamerInput> = z.object({
+export const DownvoteUncheckedCreateWithoutUserInputSchema: z.ZodType<Prisma.DownvoteUncheckedCreateWithoutUserInput> = z.object({
   id: z.string().uuid().optional(),
-  user_id: z.string()
+  streamerId: z.string()
 }).strict();
 
-export const DownvoteCreateOrConnectWithoutStreamerInputSchema: z.ZodType<Prisma.DownvoteCreateOrConnectWithoutStreamerInput> = z.object({
+export const DownvoteCreateOrConnectWithoutUserInputSchema: z.ZodType<Prisma.DownvoteCreateOrConnectWithoutUserInput> = z.object({
   where: z.lazy(() => DownvoteWhereUniqueInputSchema),
-  create: z.union([ z.lazy(() => DownvoteCreateWithoutStreamerInputSchema),z.lazy(() => DownvoteUncheckedCreateWithoutStreamerInputSchema) ]),
+  create: z.union([ z.lazy(() => DownvoteCreateWithoutUserInputSchema),z.lazy(() => DownvoteUncheckedCreateWithoutUserInputSchema) ]),
+}).strict();
+
+export const UpvoteUpsertWithWhereUniqueWithoutUserInputSchema: z.ZodType<Prisma.UpvoteUpsertWithWhereUniqueWithoutUserInput> = z.object({
+  where: z.lazy(() => UpvoteWhereUniqueInputSchema),
+  update: z.union([ z.lazy(() => UpvoteUpdateWithoutUserInputSchema),z.lazy(() => UpvoteUncheckedUpdateWithoutUserInputSchema) ]),
+  create: z.union([ z.lazy(() => UpvoteCreateWithoutUserInputSchema),z.lazy(() => UpvoteUncheckedCreateWithoutUserInputSchema) ]),
+}).strict();
+
+export const UpvoteUpdateWithWhereUniqueWithoutUserInputSchema: z.ZodType<Prisma.UpvoteUpdateWithWhereUniqueWithoutUserInput> = z.object({
+  where: z.lazy(() => UpvoteWhereUniqueInputSchema),
+  data: z.union([ z.lazy(() => UpvoteUpdateWithoutUserInputSchema),z.lazy(() => UpvoteUncheckedUpdateWithoutUserInputSchema) ]),
+}).strict();
+
+export const UpvoteUpdateManyWithWhereWithoutUserInputSchema: z.ZodType<Prisma.UpvoteUpdateManyWithWhereWithoutUserInput> = z.object({
+  where: z.lazy(() => UpvoteScalarWhereInputSchema),
+  data: z.union([ z.lazy(() => UpvoteUpdateManyMutationInputSchema),z.lazy(() => UpvoteUncheckedUpdateManyWithoutUpvoteInputSchema) ]),
+}).strict();
+
+export const UpvoteScalarWhereInputSchema: z.ZodType<Prisma.UpvoteScalarWhereInput> = z.object({
+  AND: z.union([ z.lazy(() => UpvoteScalarWhereInputSchema),z.lazy(() => UpvoteScalarWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => UpvoteScalarWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => UpvoteScalarWhereInputSchema),z.lazy(() => UpvoteScalarWhereInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  streamerId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  userId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+}).strict();
+
+export const DownvoteUpsertWithWhereUniqueWithoutUserInputSchema: z.ZodType<Prisma.DownvoteUpsertWithWhereUniqueWithoutUserInput> = z.object({
+  where: z.lazy(() => DownvoteWhereUniqueInputSchema),
+  update: z.union([ z.lazy(() => DownvoteUpdateWithoutUserInputSchema),z.lazy(() => DownvoteUncheckedUpdateWithoutUserInputSchema) ]),
+  create: z.union([ z.lazy(() => DownvoteCreateWithoutUserInputSchema),z.lazy(() => DownvoteUncheckedCreateWithoutUserInputSchema) ]),
+}).strict();
+
+export const DownvoteUpdateWithWhereUniqueWithoutUserInputSchema: z.ZodType<Prisma.DownvoteUpdateWithWhereUniqueWithoutUserInput> = z.object({
+  where: z.lazy(() => DownvoteWhereUniqueInputSchema),
+  data: z.union([ z.lazy(() => DownvoteUpdateWithoutUserInputSchema),z.lazy(() => DownvoteUncheckedUpdateWithoutUserInputSchema) ]),
+}).strict();
+
+export const DownvoteUpdateManyWithWhereWithoutUserInputSchema: z.ZodType<Prisma.DownvoteUpdateManyWithWhereWithoutUserInput> = z.object({
+  where: z.lazy(() => DownvoteScalarWhereInputSchema),
+  data: z.union([ z.lazy(() => DownvoteUpdateManyMutationInputSchema),z.lazy(() => DownvoteUncheckedUpdateManyWithoutDownvoteInputSchema) ]),
+}).strict();
+
+export const DownvoteScalarWhereInputSchema: z.ZodType<Prisma.DownvoteScalarWhereInput> = z.object({
+  AND: z.union([ z.lazy(() => DownvoteScalarWhereInputSchema),z.lazy(() => DownvoteScalarWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => DownvoteScalarWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => DownvoteScalarWhereInputSchema),z.lazy(() => DownvoteScalarWhereInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  streamerId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  userId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
 }).strict();
 
 export const PlatformCreateWithoutStreamerInputSchema: z.ZodType<Prisma.PlatformCreateWithoutStreamerInput> = z.object({
@@ -1040,6 +1266,51 @@ export const PlatformUncheckedCreateWithoutStreamerInputSchema: z.ZodType<Prisma
 export const PlatformCreateOrConnectWithoutStreamerInputSchema: z.ZodType<Prisma.PlatformCreateOrConnectWithoutStreamerInput> = z.object({
   where: z.lazy(() => PlatformWhereUniqueInputSchema),
   create: z.union([ z.lazy(() => PlatformCreateWithoutStreamerInputSchema),z.lazy(() => PlatformUncheckedCreateWithoutStreamerInputSchema) ]),
+}).strict();
+
+export const UpvoteCreateWithoutStreamerInputSchema: z.ZodType<Prisma.UpvoteCreateWithoutStreamerInput> = z.object({
+  id: z.string().uuid().optional(),
+  User: z.lazy(() => UserCreateNestedOneWithoutUpvoteInputSchema)
+}).strict();
+
+export const UpvoteUncheckedCreateWithoutStreamerInputSchema: z.ZodType<Prisma.UpvoteUncheckedCreateWithoutStreamerInput> = z.object({
+  id: z.string().uuid().optional(),
+  userId: z.string()
+}).strict();
+
+export const UpvoteCreateOrConnectWithoutStreamerInputSchema: z.ZodType<Prisma.UpvoteCreateOrConnectWithoutStreamerInput> = z.object({
+  where: z.lazy(() => UpvoteWhereUniqueInputSchema),
+  create: z.union([ z.lazy(() => UpvoteCreateWithoutStreamerInputSchema),z.lazy(() => UpvoteUncheckedCreateWithoutStreamerInputSchema) ]),
+}).strict();
+
+export const DownvoteCreateWithoutStreamerInputSchema: z.ZodType<Prisma.DownvoteCreateWithoutStreamerInput> = z.object({
+  id: z.string().uuid().optional(),
+  User: z.lazy(() => UserCreateNestedOneWithoutDownvoteInputSchema)
+}).strict();
+
+export const DownvoteUncheckedCreateWithoutStreamerInputSchema: z.ZodType<Prisma.DownvoteUncheckedCreateWithoutStreamerInput> = z.object({
+  id: z.string().uuid().optional(),
+  userId: z.string()
+}).strict();
+
+export const DownvoteCreateOrConnectWithoutStreamerInputSchema: z.ZodType<Prisma.DownvoteCreateOrConnectWithoutStreamerInput> = z.object({
+  where: z.lazy(() => DownvoteWhereUniqueInputSchema),
+  create: z.union([ z.lazy(() => DownvoteCreateWithoutStreamerInputSchema),z.lazy(() => DownvoteUncheckedCreateWithoutStreamerInputSchema) ]),
+}).strict();
+
+export const PlatformUpsertWithoutStreamerInputSchema: z.ZodType<Prisma.PlatformUpsertWithoutStreamerInput> = z.object({
+  update: z.union([ z.lazy(() => PlatformUpdateWithoutStreamerInputSchema),z.lazy(() => PlatformUncheckedUpdateWithoutStreamerInputSchema) ]),
+  create: z.union([ z.lazy(() => PlatformCreateWithoutStreamerInputSchema),z.lazy(() => PlatformUncheckedCreateWithoutStreamerInputSchema) ]),
+}).strict();
+
+export const PlatformUpdateWithoutStreamerInputSchema: z.ZodType<Prisma.PlatformUpdateWithoutStreamerInput> = z.object({
+  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  type: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const PlatformUncheckedUpdateWithoutStreamerInputSchema: z.ZodType<Prisma.PlatformUncheckedUpdateWithoutStreamerInput> = z.object({
+  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  type: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const UpvoteUpsertWithWhereUniqueWithoutStreamerInputSchema: z.ZodType<Prisma.UpvoteUpsertWithWhereUniqueWithoutStreamerInput> = z.object({
@@ -1058,15 +1329,6 @@ export const UpvoteUpdateManyWithWhereWithoutStreamerInputSchema: z.ZodType<Pris
   data: z.union([ z.lazy(() => UpvoteUpdateManyMutationInputSchema),z.lazy(() => UpvoteUncheckedUpdateManyWithoutUpvoteInputSchema) ]),
 }).strict();
 
-export const UpvoteScalarWhereInputSchema: z.ZodType<Prisma.UpvoteScalarWhereInput> = z.object({
-  AND: z.union([ z.lazy(() => UpvoteScalarWhereInputSchema),z.lazy(() => UpvoteScalarWhereInputSchema).array() ]).optional(),
-  OR: z.lazy(() => UpvoteScalarWhereInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => UpvoteScalarWhereInputSchema),z.lazy(() => UpvoteScalarWhereInputSchema).array() ]).optional(),
-  id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  user_id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  streamer_id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-}).strict();
-
 export const DownvoteUpsertWithWhereUniqueWithoutStreamerInputSchema: z.ZodType<Prisma.DownvoteUpsertWithWhereUniqueWithoutStreamerInput> = z.object({
   where: z.lazy(() => DownvoteWhereUniqueInputSchema),
   update: z.union([ z.lazy(() => DownvoteUpdateWithoutStreamerInputSchema),z.lazy(() => DownvoteUncheckedUpdateWithoutStreamerInputSchema) ]),
@@ -1081,40 +1343,6 @@ export const DownvoteUpdateWithWhereUniqueWithoutStreamerInputSchema: z.ZodType<
 export const DownvoteUpdateManyWithWhereWithoutStreamerInputSchema: z.ZodType<Prisma.DownvoteUpdateManyWithWhereWithoutStreamerInput> = z.object({
   where: z.lazy(() => DownvoteScalarWhereInputSchema),
   data: z.union([ z.lazy(() => DownvoteUpdateManyMutationInputSchema),z.lazy(() => DownvoteUncheckedUpdateManyWithoutDownvoteInputSchema) ]),
-}).strict();
-
-export const DownvoteScalarWhereInputSchema: z.ZodType<Prisma.DownvoteScalarWhereInput> = z.object({
-  AND: z.union([ z.lazy(() => DownvoteScalarWhereInputSchema),z.lazy(() => DownvoteScalarWhereInputSchema).array() ]).optional(),
-  OR: z.lazy(() => DownvoteScalarWhereInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => DownvoteScalarWhereInputSchema),z.lazy(() => DownvoteScalarWhereInputSchema).array() ]).optional(),
-  id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  user_id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  streamer_id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-}).strict();
-
-export const PlatformUpsertWithWhereUniqueWithoutStreamerInputSchema: z.ZodType<Prisma.PlatformUpsertWithWhereUniqueWithoutStreamerInput> = z.object({
-  where: z.lazy(() => PlatformWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => PlatformUpdateWithoutStreamerInputSchema),z.lazy(() => PlatformUncheckedUpdateWithoutStreamerInputSchema) ]),
-  create: z.union([ z.lazy(() => PlatformCreateWithoutStreamerInputSchema),z.lazy(() => PlatformUncheckedCreateWithoutStreamerInputSchema) ]),
-}).strict();
-
-export const PlatformUpdateWithWhereUniqueWithoutStreamerInputSchema: z.ZodType<Prisma.PlatformUpdateWithWhereUniqueWithoutStreamerInput> = z.object({
-  where: z.lazy(() => PlatformWhereUniqueInputSchema),
-  data: z.union([ z.lazy(() => PlatformUpdateWithoutStreamerInputSchema),z.lazy(() => PlatformUncheckedUpdateWithoutStreamerInputSchema) ]),
-}).strict();
-
-export const PlatformUpdateManyWithWhereWithoutStreamerInputSchema: z.ZodType<Prisma.PlatformUpdateManyWithWhereWithoutStreamerInput> = z.object({
-  where: z.lazy(() => PlatformScalarWhereInputSchema),
-  data: z.union([ z.lazy(() => PlatformUpdateManyMutationInputSchema),z.lazy(() => PlatformUncheckedUpdateManyWithoutPlatformInputSchema) ]),
-}).strict();
-
-export const PlatformScalarWhereInputSchema: z.ZodType<Prisma.PlatformScalarWhereInput> = z.object({
-  AND: z.union([ z.lazy(() => PlatformScalarWhereInputSchema),z.lazy(() => PlatformScalarWhereInputSchema).array() ]).optional(),
-  OR: z.lazy(() => PlatformScalarWhereInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => PlatformScalarWhereInputSchema),z.lazy(() => PlatformScalarWhereInputSchema).array() ]).optional(),
-  id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  type: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  streamer_id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
 }).strict();
 
 export const StreamerCreateWithoutPlatformInputSchema: z.ZodType<Prisma.StreamerCreateWithoutPlatformInput> = z.object({
@@ -1138,9 +1366,224 @@ export const StreamerCreateOrConnectWithoutPlatformInputSchema: z.ZodType<Prisma
   create: z.union([ z.lazy(() => StreamerCreateWithoutPlatformInputSchema),z.lazy(() => StreamerUncheckedCreateWithoutPlatformInputSchema) ]),
 }).strict();
 
-export const StreamerUpsertWithoutPlatformInputSchema: z.ZodType<Prisma.StreamerUpsertWithoutPlatformInput> = z.object({
+export const StreamerUpsertWithWhereUniqueWithoutPlatformInputSchema: z.ZodType<Prisma.StreamerUpsertWithWhereUniqueWithoutPlatformInput> = z.object({
+  where: z.lazy(() => StreamerWhereUniqueInputSchema),
   update: z.union([ z.lazy(() => StreamerUpdateWithoutPlatformInputSchema),z.lazy(() => StreamerUncheckedUpdateWithoutPlatformInputSchema) ]),
   create: z.union([ z.lazy(() => StreamerCreateWithoutPlatformInputSchema),z.lazy(() => StreamerUncheckedCreateWithoutPlatformInputSchema) ]),
+}).strict();
+
+export const StreamerUpdateWithWhereUniqueWithoutPlatformInputSchema: z.ZodType<Prisma.StreamerUpdateWithWhereUniqueWithoutPlatformInput> = z.object({
+  where: z.lazy(() => StreamerWhereUniqueInputSchema),
+  data: z.union([ z.lazy(() => StreamerUpdateWithoutPlatformInputSchema),z.lazy(() => StreamerUncheckedUpdateWithoutPlatformInputSchema) ]),
+}).strict();
+
+export const StreamerUpdateManyWithWhereWithoutPlatformInputSchema: z.ZodType<Prisma.StreamerUpdateManyWithWhereWithoutPlatformInput> = z.object({
+  where: z.lazy(() => StreamerScalarWhereInputSchema),
+  data: z.union([ z.lazy(() => StreamerUpdateManyMutationInputSchema),z.lazy(() => StreamerUncheckedUpdateManyWithoutStreamerInputSchema) ]),
+}).strict();
+
+export const StreamerScalarWhereInputSchema: z.ZodType<Prisma.StreamerScalarWhereInput> = z.object({
+  AND: z.union([ z.lazy(() => StreamerScalarWhereInputSchema),z.lazy(() => StreamerScalarWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => StreamerScalarWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => StreamerScalarWhereInputSchema),z.lazy(() => StreamerScalarWhereInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  name: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  description: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
+  platformId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+}).strict();
+
+export const StreamerCreateWithoutUpvoteInputSchema: z.ZodType<Prisma.StreamerCreateWithoutUpvoteInput> = z.object({
+  id: z.string().uuid().optional(),
+  name: z.string(),
+  description: z.string().optional().nullable(),
+  Platform: z.lazy(() => PlatformCreateNestedOneWithoutStreamerInputSchema),
+  Downvote: z.lazy(() => DownvoteCreateNestedManyWithoutStreamerInputSchema).optional()
+}).strict();
+
+export const StreamerUncheckedCreateWithoutUpvoteInputSchema: z.ZodType<Prisma.StreamerUncheckedCreateWithoutUpvoteInput> = z.object({
+  id: z.string().uuid().optional(),
+  name: z.string(),
+  description: z.string().optional().nullable(),
+  platformId: z.string(),
+  Downvote: z.lazy(() => DownvoteUncheckedCreateNestedManyWithoutStreamerInputSchema).optional()
+}).strict();
+
+export const StreamerCreateOrConnectWithoutUpvoteInputSchema: z.ZodType<Prisma.StreamerCreateOrConnectWithoutUpvoteInput> = z.object({
+  where: z.lazy(() => StreamerWhereUniqueInputSchema),
+  create: z.union([ z.lazy(() => StreamerCreateWithoutUpvoteInputSchema),z.lazy(() => StreamerUncheckedCreateWithoutUpvoteInputSchema) ]),
+}).strict();
+
+export const UserCreateWithoutUpvoteInputSchema: z.ZodType<Prisma.UserCreateWithoutUpvoteInput> = z.object({
+  id: z.string().uuid().optional(),
+  Downvote: z.lazy(() => DownvoteCreateNestedManyWithoutUserInputSchema).optional()
+}).strict();
+
+export const UserUncheckedCreateWithoutUpvoteInputSchema: z.ZodType<Prisma.UserUncheckedCreateWithoutUpvoteInput> = z.object({
+  id: z.string().uuid().optional(),
+  Downvote: z.lazy(() => DownvoteUncheckedCreateNestedManyWithoutUserInputSchema).optional()
+}).strict();
+
+export const UserCreateOrConnectWithoutUpvoteInputSchema: z.ZodType<Prisma.UserCreateOrConnectWithoutUpvoteInput> = z.object({
+  where: z.lazy(() => UserWhereUniqueInputSchema),
+  create: z.union([ z.lazy(() => UserCreateWithoutUpvoteInputSchema),z.lazy(() => UserUncheckedCreateWithoutUpvoteInputSchema) ]),
+}).strict();
+
+export const StreamerUpsertWithoutUpvoteInputSchema: z.ZodType<Prisma.StreamerUpsertWithoutUpvoteInput> = z.object({
+  update: z.union([ z.lazy(() => StreamerUpdateWithoutUpvoteInputSchema),z.lazy(() => StreamerUncheckedUpdateWithoutUpvoteInputSchema) ]),
+  create: z.union([ z.lazy(() => StreamerCreateWithoutUpvoteInputSchema),z.lazy(() => StreamerUncheckedCreateWithoutUpvoteInputSchema) ]),
+}).strict();
+
+export const StreamerUpdateWithoutUpvoteInputSchema: z.ZodType<Prisma.StreamerUpdateWithoutUpvoteInput> = z.object({
+  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  Platform: z.lazy(() => PlatformUpdateOneRequiredWithoutStreamerNestedInputSchema).optional(),
+  Downvote: z.lazy(() => DownvoteUpdateManyWithoutStreamerNestedInputSchema).optional()
+}).strict();
+
+export const StreamerUncheckedUpdateWithoutUpvoteInputSchema: z.ZodType<Prisma.StreamerUncheckedUpdateWithoutUpvoteInput> = z.object({
+  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  platformId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  Downvote: z.lazy(() => DownvoteUncheckedUpdateManyWithoutStreamerNestedInputSchema).optional()
+}).strict();
+
+export const UserUpsertWithoutUpvoteInputSchema: z.ZodType<Prisma.UserUpsertWithoutUpvoteInput> = z.object({
+  update: z.union([ z.lazy(() => UserUpdateWithoutUpvoteInputSchema),z.lazy(() => UserUncheckedUpdateWithoutUpvoteInputSchema) ]),
+  create: z.union([ z.lazy(() => UserCreateWithoutUpvoteInputSchema),z.lazy(() => UserUncheckedCreateWithoutUpvoteInputSchema) ]),
+}).strict();
+
+export const UserUpdateWithoutUpvoteInputSchema: z.ZodType<Prisma.UserUpdateWithoutUpvoteInput> = z.object({
+  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  Downvote: z.lazy(() => DownvoteUpdateManyWithoutUserNestedInputSchema).optional()
+}).strict();
+
+export const UserUncheckedUpdateWithoutUpvoteInputSchema: z.ZodType<Prisma.UserUncheckedUpdateWithoutUpvoteInput> = z.object({
+  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  Downvote: z.lazy(() => DownvoteUncheckedUpdateManyWithoutUserNestedInputSchema).optional()
+}).strict();
+
+export const StreamerCreateWithoutDownvoteInputSchema: z.ZodType<Prisma.StreamerCreateWithoutDownvoteInput> = z.object({
+  id: z.string().uuid().optional(),
+  name: z.string(),
+  description: z.string().optional().nullable(),
+  Platform: z.lazy(() => PlatformCreateNestedOneWithoutStreamerInputSchema),
+  Upvote: z.lazy(() => UpvoteCreateNestedManyWithoutStreamerInputSchema).optional()
+}).strict();
+
+export const StreamerUncheckedCreateWithoutDownvoteInputSchema: z.ZodType<Prisma.StreamerUncheckedCreateWithoutDownvoteInput> = z.object({
+  id: z.string().uuid().optional(),
+  name: z.string(),
+  description: z.string().optional().nullable(),
+  platformId: z.string(),
+  Upvote: z.lazy(() => UpvoteUncheckedCreateNestedManyWithoutStreamerInputSchema).optional()
+}).strict();
+
+export const StreamerCreateOrConnectWithoutDownvoteInputSchema: z.ZodType<Prisma.StreamerCreateOrConnectWithoutDownvoteInput> = z.object({
+  where: z.lazy(() => StreamerWhereUniqueInputSchema),
+  create: z.union([ z.lazy(() => StreamerCreateWithoutDownvoteInputSchema),z.lazy(() => StreamerUncheckedCreateWithoutDownvoteInputSchema) ]),
+}).strict();
+
+export const UserCreateWithoutDownvoteInputSchema: z.ZodType<Prisma.UserCreateWithoutDownvoteInput> = z.object({
+  id: z.string().uuid().optional(),
+  Upvote: z.lazy(() => UpvoteCreateNestedManyWithoutUserInputSchema).optional()
+}).strict();
+
+export const UserUncheckedCreateWithoutDownvoteInputSchema: z.ZodType<Prisma.UserUncheckedCreateWithoutDownvoteInput> = z.object({
+  id: z.string().uuid().optional(),
+  Upvote: z.lazy(() => UpvoteUncheckedCreateNestedManyWithoutUserInputSchema).optional()
+}).strict();
+
+export const UserCreateOrConnectWithoutDownvoteInputSchema: z.ZodType<Prisma.UserCreateOrConnectWithoutDownvoteInput> = z.object({
+  where: z.lazy(() => UserWhereUniqueInputSchema),
+  create: z.union([ z.lazy(() => UserCreateWithoutDownvoteInputSchema),z.lazy(() => UserUncheckedCreateWithoutDownvoteInputSchema) ]),
+}).strict();
+
+export const StreamerUpsertWithoutDownvoteInputSchema: z.ZodType<Prisma.StreamerUpsertWithoutDownvoteInput> = z.object({
+  update: z.union([ z.lazy(() => StreamerUpdateWithoutDownvoteInputSchema),z.lazy(() => StreamerUncheckedUpdateWithoutDownvoteInputSchema) ]),
+  create: z.union([ z.lazy(() => StreamerCreateWithoutDownvoteInputSchema),z.lazy(() => StreamerUncheckedCreateWithoutDownvoteInputSchema) ]),
+}).strict();
+
+export const StreamerUpdateWithoutDownvoteInputSchema: z.ZodType<Prisma.StreamerUpdateWithoutDownvoteInput> = z.object({
+  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  Platform: z.lazy(() => PlatformUpdateOneRequiredWithoutStreamerNestedInputSchema).optional(),
+  Upvote: z.lazy(() => UpvoteUpdateManyWithoutStreamerNestedInputSchema).optional()
+}).strict();
+
+export const StreamerUncheckedUpdateWithoutDownvoteInputSchema: z.ZodType<Prisma.StreamerUncheckedUpdateWithoutDownvoteInput> = z.object({
+  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  platformId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  Upvote: z.lazy(() => UpvoteUncheckedUpdateManyWithoutStreamerNestedInputSchema).optional()
+}).strict();
+
+export const UserUpsertWithoutDownvoteInputSchema: z.ZodType<Prisma.UserUpsertWithoutDownvoteInput> = z.object({
+  update: z.union([ z.lazy(() => UserUpdateWithoutDownvoteInputSchema),z.lazy(() => UserUncheckedUpdateWithoutDownvoteInputSchema) ]),
+  create: z.union([ z.lazy(() => UserCreateWithoutDownvoteInputSchema),z.lazy(() => UserUncheckedCreateWithoutDownvoteInputSchema) ]),
+}).strict();
+
+export const UserUpdateWithoutDownvoteInputSchema: z.ZodType<Prisma.UserUpdateWithoutDownvoteInput> = z.object({
+  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  Upvote: z.lazy(() => UpvoteUpdateManyWithoutUserNestedInputSchema).optional()
+}).strict();
+
+export const UserUncheckedUpdateWithoutDownvoteInputSchema: z.ZodType<Prisma.UserUncheckedUpdateWithoutDownvoteInput> = z.object({
+  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  Upvote: z.lazy(() => UpvoteUncheckedUpdateManyWithoutUserNestedInputSchema).optional()
+}).strict();
+
+export const UpvoteUpdateWithoutUserInputSchema: z.ZodType<Prisma.UpvoteUpdateWithoutUserInput> = z.object({
+  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  Streamer: z.lazy(() => StreamerUpdateOneRequiredWithoutUpvoteNestedInputSchema).optional()
+}).strict();
+
+export const UpvoteUncheckedUpdateWithoutUserInputSchema: z.ZodType<Prisma.UpvoteUncheckedUpdateWithoutUserInput> = z.object({
+  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  streamerId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const UpvoteUncheckedUpdateManyWithoutUpvoteInputSchema: z.ZodType<Prisma.UpvoteUncheckedUpdateManyWithoutUpvoteInput> = z.object({
+  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  streamerId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const DownvoteUpdateWithoutUserInputSchema: z.ZodType<Prisma.DownvoteUpdateWithoutUserInput> = z.object({
+  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  Streamer: z.lazy(() => StreamerUpdateOneRequiredWithoutDownvoteNestedInputSchema).optional()
+}).strict();
+
+export const DownvoteUncheckedUpdateWithoutUserInputSchema: z.ZodType<Prisma.DownvoteUncheckedUpdateWithoutUserInput> = z.object({
+  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  streamerId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const DownvoteUncheckedUpdateManyWithoutDownvoteInputSchema: z.ZodType<Prisma.DownvoteUncheckedUpdateManyWithoutDownvoteInput> = z.object({
+  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  streamerId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const UpvoteUpdateWithoutStreamerInputSchema: z.ZodType<Prisma.UpvoteUpdateWithoutStreamerInput> = z.object({
+  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  User: z.lazy(() => UserUpdateOneRequiredWithoutUpvoteNestedInputSchema).optional()
+}).strict();
+
+export const UpvoteUncheckedUpdateWithoutStreamerInputSchema: z.ZodType<Prisma.UpvoteUncheckedUpdateWithoutStreamerInput> = z.object({
+  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const DownvoteUpdateWithoutStreamerInputSchema: z.ZodType<Prisma.DownvoteUpdateWithoutStreamerInput> = z.object({
+  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  User: z.lazy(() => UserUpdateOneRequiredWithoutDownvoteNestedInputSchema).optional()
+}).strict();
+
+export const DownvoteUncheckedUpdateWithoutStreamerInputSchema: z.ZodType<Prisma.DownvoteUncheckedUpdateWithoutStreamerInput> = z.object({
+  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const StreamerUpdateWithoutPlatformInputSchema: z.ZodType<Prisma.StreamerUpdateWithoutPlatformInput> = z.object({
@@ -1159,133 +1602,10 @@ export const StreamerUncheckedUpdateWithoutPlatformInputSchema: z.ZodType<Prisma
   Downvote: z.lazy(() => DownvoteUncheckedUpdateManyWithoutStreamerNestedInputSchema).optional()
 }).strict();
 
-export const StreamerCreateWithoutUpvoteInputSchema: z.ZodType<Prisma.StreamerCreateWithoutUpvoteInput> = z.object({
-  id: z.string().uuid().optional(),
-  name: z.string(),
-  description: z.string().optional().nullable(),
-  Downvote: z.lazy(() => DownvoteCreateNestedManyWithoutStreamerInputSchema).optional(),
-  Platform: z.lazy(() => PlatformCreateNestedManyWithoutStreamerInputSchema).optional()
-}).strict();
-
-export const StreamerUncheckedCreateWithoutUpvoteInputSchema: z.ZodType<Prisma.StreamerUncheckedCreateWithoutUpvoteInput> = z.object({
-  id: z.string().uuid().optional(),
-  name: z.string(),
-  description: z.string().optional().nullable(),
-  Downvote: z.lazy(() => DownvoteUncheckedCreateNestedManyWithoutStreamerInputSchema).optional(),
-  Platform: z.lazy(() => PlatformUncheckedCreateNestedManyWithoutStreamerInputSchema).optional()
-}).strict();
-
-export const StreamerCreateOrConnectWithoutUpvoteInputSchema: z.ZodType<Prisma.StreamerCreateOrConnectWithoutUpvoteInput> = z.object({
-  where: z.lazy(() => StreamerWhereUniqueInputSchema),
-  create: z.union([ z.lazy(() => StreamerCreateWithoutUpvoteInputSchema),z.lazy(() => StreamerUncheckedCreateWithoutUpvoteInputSchema) ]),
-}).strict();
-
-export const StreamerUpsertWithoutUpvoteInputSchema: z.ZodType<Prisma.StreamerUpsertWithoutUpvoteInput> = z.object({
-  update: z.union([ z.lazy(() => StreamerUpdateWithoutUpvoteInputSchema),z.lazy(() => StreamerUncheckedUpdateWithoutUpvoteInputSchema) ]),
-  create: z.union([ z.lazy(() => StreamerCreateWithoutUpvoteInputSchema),z.lazy(() => StreamerUncheckedCreateWithoutUpvoteInputSchema) ]),
-}).strict();
-
-export const StreamerUpdateWithoutUpvoteInputSchema: z.ZodType<Prisma.StreamerUpdateWithoutUpvoteInput> = z.object({
+export const StreamerUncheckedUpdateManyWithoutStreamerInputSchema: z.ZodType<Prisma.StreamerUncheckedUpdateManyWithoutStreamerInput> = z.object({
   id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  Downvote: z.lazy(() => DownvoteUpdateManyWithoutStreamerNestedInputSchema).optional(),
-  Platform: z.lazy(() => PlatformUpdateManyWithoutStreamerNestedInputSchema).optional()
-}).strict();
-
-export const StreamerUncheckedUpdateWithoutUpvoteInputSchema: z.ZodType<Prisma.StreamerUncheckedUpdateWithoutUpvoteInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  Downvote: z.lazy(() => DownvoteUncheckedUpdateManyWithoutStreamerNestedInputSchema).optional(),
-  Platform: z.lazy(() => PlatformUncheckedUpdateManyWithoutStreamerNestedInputSchema).optional()
-}).strict();
-
-export const StreamerCreateWithoutDownvoteInputSchema: z.ZodType<Prisma.StreamerCreateWithoutDownvoteInput> = z.object({
-  id: z.string().uuid().optional(),
-  name: z.string(),
-  description: z.string().optional().nullable(),
-  Upvote: z.lazy(() => UpvoteCreateNestedManyWithoutStreamerInputSchema).optional(),
-  Platform: z.lazy(() => PlatformCreateNestedManyWithoutStreamerInputSchema).optional()
-}).strict();
-
-export const StreamerUncheckedCreateWithoutDownvoteInputSchema: z.ZodType<Prisma.StreamerUncheckedCreateWithoutDownvoteInput> = z.object({
-  id: z.string().uuid().optional(),
-  name: z.string(),
-  description: z.string().optional().nullable(),
-  Upvote: z.lazy(() => UpvoteUncheckedCreateNestedManyWithoutStreamerInputSchema).optional(),
-  Platform: z.lazy(() => PlatformUncheckedCreateNestedManyWithoutStreamerInputSchema).optional()
-}).strict();
-
-export const StreamerCreateOrConnectWithoutDownvoteInputSchema: z.ZodType<Prisma.StreamerCreateOrConnectWithoutDownvoteInput> = z.object({
-  where: z.lazy(() => StreamerWhereUniqueInputSchema),
-  create: z.union([ z.lazy(() => StreamerCreateWithoutDownvoteInputSchema),z.lazy(() => StreamerUncheckedCreateWithoutDownvoteInputSchema) ]),
-}).strict();
-
-export const StreamerUpsertWithoutDownvoteInputSchema: z.ZodType<Prisma.StreamerUpsertWithoutDownvoteInput> = z.object({
-  update: z.union([ z.lazy(() => StreamerUpdateWithoutDownvoteInputSchema),z.lazy(() => StreamerUncheckedUpdateWithoutDownvoteInputSchema) ]),
-  create: z.union([ z.lazy(() => StreamerCreateWithoutDownvoteInputSchema),z.lazy(() => StreamerUncheckedCreateWithoutDownvoteInputSchema) ]),
-}).strict();
-
-export const StreamerUpdateWithoutDownvoteInputSchema: z.ZodType<Prisma.StreamerUpdateWithoutDownvoteInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  Upvote: z.lazy(() => UpvoteUpdateManyWithoutStreamerNestedInputSchema).optional(),
-  Platform: z.lazy(() => PlatformUpdateManyWithoutStreamerNestedInputSchema).optional()
-}).strict();
-
-export const StreamerUncheckedUpdateWithoutDownvoteInputSchema: z.ZodType<Prisma.StreamerUncheckedUpdateWithoutDownvoteInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  Upvote: z.lazy(() => UpvoteUncheckedUpdateManyWithoutStreamerNestedInputSchema).optional(),
-  Platform: z.lazy(() => PlatformUncheckedUpdateManyWithoutStreamerNestedInputSchema).optional()
-}).strict();
-
-export const UpvoteUpdateWithoutStreamerInputSchema: z.ZodType<Prisma.UpvoteUpdateWithoutStreamerInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  user_id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const UpvoteUncheckedUpdateWithoutStreamerInputSchema: z.ZodType<Prisma.UpvoteUncheckedUpdateWithoutStreamerInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  user_id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const UpvoteUncheckedUpdateManyWithoutUpvoteInputSchema: z.ZodType<Prisma.UpvoteUncheckedUpdateManyWithoutUpvoteInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  user_id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const DownvoteUpdateWithoutStreamerInputSchema: z.ZodType<Prisma.DownvoteUpdateWithoutStreamerInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  user_id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const DownvoteUncheckedUpdateWithoutStreamerInputSchema: z.ZodType<Prisma.DownvoteUncheckedUpdateWithoutStreamerInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  user_id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const DownvoteUncheckedUpdateManyWithoutDownvoteInputSchema: z.ZodType<Prisma.DownvoteUncheckedUpdateManyWithoutDownvoteInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  user_id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const PlatformUpdateWithoutStreamerInputSchema: z.ZodType<Prisma.PlatformUpdateWithoutStreamerInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  type: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const PlatformUncheckedUpdateWithoutStreamerInputSchema: z.ZodType<Prisma.PlatformUncheckedUpdateWithoutStreamerInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  type: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const PlatformUncheckedUpdateManyWithoutPlatformInputSchema: z.ZodType<Prisma.PlatformUncheckedUpdateManyWithoutPlatformInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  type: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 /////////////////////////////////////////
@@ -1294,6 +1614,7 @@ export const PlatformUncheckedUpdateManyWithoutPlatformInputSchema: z.ZodType<Pr
 
 export const UserFindFirstArgsSchema: z.ZodType<Prisma.UserFindFirstArgs> = z.object({
   select: UserSelectSchema.optional(),
+  include: UserIncludeSchema.optional(),
   where: UserWhereInputSchema.optional(),
   orderBy: z.union([ UserOrderByWithRelationInputSchema.array(),UserOrderByWithRelationInputSchema ]).optional(),
   cursor: UserWhereUniqueInputSchema.optional(),
@@ -1304,6 +1625,7 @@ export const UserFindFirstArgsSchema: z.ZodType<Prisma.UserFindFirstArgs> = z.ob
 
 export const UserFindFirstOrThrowArgsSchema: z.ZodType<Prisma.UserFindFirstOrThrowArgs> = z.object({
   select: UserSelectSchema.optional(),
+  include: UserIncludeSchema.optional(),
   where: UserWhereInputSchema.optional(),
   orderBy: z.union([ UserOrderByWithRelationInputSchema.array(),UserOrderByWithRelationInputSchema ]).optional(),
   cursor: UserWhereUniqueInputSchema.optional(),
@@ -1314,6 +1636,7 @@ export const UserFindFirstOrThrowArgsSchema: z.ZodType<Prisma.UserFindFirstOrThr
 
 export const UserFindManyArgsSchema: z.ZodType<Prisma.UserFindManyArgs> = z.object({
   select: UserSelectSchema.optional(),
+  include: UserIncludeSchema.optional(),
   where: UserWhereInputSchema.optional(),
   orderBy: z.union([ UserOrderByWithRelationInputSchema.array(),UserOrderByWithRelationInputSchema ]).optional(),
   cursor: UserWhereUniqueInputSchema.optional(),
@@ -1341,11 +1664,13 @@ export const UserGroupByArgsSchema: z.ZodType<Prisma.UserGroupByArgs> = z.object
 
 export const UserFindUniqueArgsSchema: z.ZodType<Prisma.UserFindUniqueArgs> = z.object({
   select: UserSelectSchema.optional(),
+  include: UserIncludeSchema.optional(),
   where: UserWhereUniqueInputSchema,
 }).strict()
 
 export const UserFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.UserFindUniqueOrThrowArgs> = z.object({
   select: UserSelectSchema.optional(),
+  include: UserIncludeSchema.optional(),
   where: UserWhereUniqueInputSchema,
 }).strict()
 
@@ -1599,11 +1924,13 @@ export const DownvoteFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.DownvoteFindU
 
 export const UserCreateArgsSchema: z.ZodType<Prisma.UserCreateArgs> = z.object({
   select: UserSelectSchema.optional(),
+  include: UserIncludeSchema.optional(),
   data: z.union([ UserCreateInputSchema,UserUncheckedCreateInputSchema ]).optional(),
 }).strict()
 
 export const UserUpsertArgsSchema: z.ZodType<Prisma.UserUpsertArgs> = z.object({
   select: UserSelectSchema.optional(),
+  include: UserIncludeSchema.optional(),
   where: UserWhereUniqueInputSchema,
   create: z.union([ UserCreateInputSchema,UserUncheckedCreateInputSchema ]),
   update: z.union([ UserUpdateInputSchema,UserUncheckedUpdateInputSchema ]),
@@ -1611,11 +1938,13 @@ export const UserUpsertArgsSchema: z.ZodType<Prisma.UserUpsertArgs> = z.object({
 
 export const UserDeleteArgsSchema: z.ZodType<Prisma.UserDeleteArgs> = z.object({
   select: UserSelectSchema.optional(),
+  include: UserIncludeSchema.optional(),
   where: UserWhereUniqueInputSchema,
 }).strict()
 
 export const UserUpdateArgsSchema: z.ZodType<Prisma.UserUpdateArgs> = z.object({
   select: UserSelectSchema.optional(),
+  include: UserIncludeSchema.optional(),
   data: z.union([ UserUpdateInputSchema,UserUncheckedUpdateInputSchema ]),
   where: UserWhereUniqueInputSchema,
 }).strict()

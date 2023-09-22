@@ -13,7 +13,7 @@ interface CloseProps {
 	className: HTMLAttributes<HTMLButtonElement>["className"];
 }
 
-function Close({ className }: CloseProps): JSX.Element {
+function ModalClose({ className }: CloseProps): JSX.Element {
 	const { handleClose } = useContext(ModalContext);
 
 	return (
@@ -44,6 +44,6 @@ function Modal({ isOpen, onHide, children, ...rest }: Props) {
 	);
 }
 
-Modal.Close = Close;
+Modal.Close = ModalClose;
 
 export { Modal };

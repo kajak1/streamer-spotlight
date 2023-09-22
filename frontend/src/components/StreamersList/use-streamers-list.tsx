@@ -14,10 +14,7 @@ function useStreamersList() {
 		socket.connect();
 
 		socket.on(EVENTS.STREAMER_ADDED, (newStreamer) => {
-			mutate(
-				SWR_KEYS.GET_ALL,
-				streamers ? [...streamers, newStreamer] : [newStreamer]
-			);
+			mutate(SWR_KEYS.STREAMERS, streamers ? [...streamers, newStreamer] : [newStreamer]);
 		});
 
 		return () => {

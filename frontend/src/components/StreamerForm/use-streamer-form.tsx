@@ -1,7 +1,6 @@
 import { isErrorResponse } from "@/src/services/service.helpers";
 import { streamersService } from "@/src/services/streamers.service";
-import type { StreamerForm } from "@/src/shared.types";
-import { StreamerFormSchema } from "@/src/shared.types";
+import { StreamerForm, StreamerFormSchema } from "@/src/shared.types";
 import { socket } from "@/src/socket";
 import { EVENTS } from "@/src/websocket.config";
 import { zodResolver } from "@hookform/resolvers/zod";

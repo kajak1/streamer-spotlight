@@ -4,21 +4,23 @@ import { ValidationError } from "zod-validation-error";
 import { ApplicationError } from "../errors/ApplicationError";
 import { errorCodes } from "../errors/errorCodes";
 
+export function handleAsyncErrors(fn: (...args: any[]) => Promise<void>) {
+	return async function handler(req: Request, res: Response, next: NextFunction) {
+		fn(req, res, next).catch(next);
+	};
+}
+
 function handleApplicationError(res: Response, err: ApplicationError) {
 	if (err.baseError instanceof Prisma.PrismaClientKnownRequestError) {
 		if (err.baseError.code === "P2002") {
 			const errorType = errorCodes["NAME_ALREADY_EXISTS"];
 
-			return res
-				.status(errorType.code)
-				.json({ error: { message: errorType.message } });
+			return res.status(errorType.code).json({ error: { message: errorType.message } });
 		}
 
 		if (err.baseError instanceof Prisma.PrismaClientValidationError) {
 			const code = 400;
-			return res
-				.status(code)
-				.json({ error: { message: err.baseError.message } });
+			return res.status(code).json({ error: { message: err.baseError.message } });
 		}
 	}
 
@@ -34,12 +36,7 @@ function handleValidationError(res: Response, err: ValidationError) {
 	return res.status(400).json({ error: { message: err.message } });
 }
 
-export function errorHandler(
-	err: Error,
-	req: Request,
-	res: Response,
-	next: NextFunction
-) {
+export function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
 	const isApplicationError = err instanceof ApplicationError;
 	const isValidationError = err instanceof ValidationError;
 
@@ -49,7 +46,5 @@ export function errorHandler(
 
 	const unknownError = errorCodes["UNKNOWN_ERROR"];
 
-	return res
-		.status(unknownError.code)
-		.json({ error: { message: unknownError.message } });
+	return res.status(unknownError.code).json({ error: { message: unknownError.message } });
 }

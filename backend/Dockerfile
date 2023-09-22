@@ -1,10 +1,23 @@
 FROM node:18.16.1-alpine
-WORKDIR /app  
-COPY package*.json ./
-RUN npm i
+WORKDIR /app
+
+RUN npm install -g pnpm
+RUN npm install -g dotenv-cli
+
+COPY package.json .
+COPY pnpm-lock.yaml .
+
+RUN pnpm install
+
+# COPY prisma/schema.prisma .
+# COPY prisma/seed.ts .
+# COPY .env.development .
 COPY . .
 
-RUN npx prisma migrate dev --name init
+# RUN ls prisma/
 
-CMD ["npm", "run", "start"]
+RUN pnpm init-db:docker
+
+# RUN dotenv -e .env.development -- npx prisma db seed
+
 EXPOSE 3001
