@@ -4,12 +4,18 @@ import Layout from "./layout";
 import { ThemeProvider } from "../context/ThemeContext";
 
 export default function App({ Component, pageProps }: AppProps) {
+	const isAuthenticated = true;
 	return (
-		<ThemeProvider>
-			<Layout>
-				<Component {...pageProps} />
-			</Layout>
-		</ThemeProvider>
+		<>
+			{isAuthenticated ? (
+				<ThemeProvider>
+					<Layout>
+						<Component {...pageProps} />
+					</Layout>
+				</ThemeProvider>
+			) : (
+				<div>not authenticated, login below</div>
+			)}
+		</>
 	);
 }
-

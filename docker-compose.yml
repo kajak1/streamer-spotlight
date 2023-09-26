@@ -7,7 +7,6 @@ services:
       - 3001:3001
     volumes:
       - ./backend:/app
-      # - /app/prisma
       - /app/node_modules
       - /app/.next
       - streamers-db:/etc/database
@@ -17,21 +16,28 @@ services:
     stdin_open: true
 
   frontend:
-    container_name: streamer-web
     build: 
       context: ./frontend
       target: dev
-    environment:
-      - WATCHPACK_POLLING=true
-      - BACKEND_URL=backend
-      # - NODE_OPTIONS=--max-old-space-size=4096
-    command: "pnpm dev"
+    container_name: streamer-web
     ports:
       - 3000:3000
     volumes:
       - ./frontend:/app
       - /app/node_modules
+    command: "pnpm dev"
+    environment:
+      - WATCHPACK_POLLING=true
+      - BACKEND_URL=backend
 
+  redis:
+    image: redis:7.2.1-alpine
+    ports:
+      - 6379:6379
+    volumes:
+      - redis-volume:/redis_data
+    
 volumes:
+  redis-volume:
   streamers-db:
     external: false
