@@ -8,11 +8,11 @@ import { AxiosError } from "axios";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
 import useSWR, { mutate } from "swr";
-import { StreamerCardProps } from "./StreamerCard";
+import { StreamerListItemProps } from "./StreamerListItem";
 
-type Props = Pick<StreamerCardProps, "id" | "name">;
+type Props = Pick<StreamerListItemProps, "id" | "name">;
 
-function useStreamerCard({ id, name }: Props) {
+function useStreamerListItem({ id, name }: Props) {
 	const { data: votes, isLoading, error } = useSWR([SWR_KEYS.STREAMERS, id], () => streamersService.getVoteCount(id));
 	const userVotes = useUserVotesOnStreamer(id);
 
@@ -62,4 +62,4 @@ function useStreamerCard({ id, name }: Props) {
 	};
 }
 
-export { useStreamerCard };
+export { useStreamerListItem };

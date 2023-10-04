@@ -4,9 +4,7 @@ import { UploadBody } from "../shared.types";
 import { getPrismaClient } from "../prismaClient";
 
 class StreamersRepository {
-	constructor() {
-		// empty
-	}
+	constructor() {}
 
 	findAll = async () => {
 		try {
@@ -76,8 +74,8 @@ class StreamersRepository {
 			},
 		});
 
-		const platforms = await getPrismaClient().platform.findMany()
-		console.log("platforms:", platforms)
+		const platforms = await getPrismaClient().platform.findMany();
+		console.log("platforms:", platforms);
 		if (!assignedPlatform) throw new ApplicationError("PLATFORM_NOT_ALLOWED");
 
 		const createdStreamer = await getPrismaClient().streamer.create({

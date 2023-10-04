@@ -9,7 +9,6 @@ function useStreamers() {
 		streamersService.getAll
 	);
 
-	if (error) console.error("error: ", error)
 	return {
 		streamers: data,
 		isLoading,

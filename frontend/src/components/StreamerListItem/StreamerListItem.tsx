@@ -6,15 +6,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRandomImage } from "../../hooks/use-random-image";
 import { VoteButton } from "../VoteButton";
-import { useStreamerCard } from "./use-streamer-card";
+import { useStreamerListItem } from "./use-streamer-list-item";
 
-export interface StreamerCardProps {
+export interface StreamerListItemProps {
 	id: GetAllResponse["id"];
 	name: GetAllResponse["name"];
 }
 
-export function StreamerCard(props: StreamerCardProps): JSX.Element {
-	const { handleVote, votes, areVotesLoading, votesError, isUpvoted, isDownvoted } = useStreamerCard(props);
+export function StreamerListItem(props: StreamerListItemProps): JSX.Element {
+	const { handleVote, votes, areVotesLoading, votesError, isUpvoted, isDownvoted } = useStreamerListItem(props);
 	const { data: image } = useRandomImage(props.name);
 
 	if (areVotesLoading) {
@@ -33,21 +33,10 @@ export function StreamerCard(props: StreamerCardProps): JSX.Element {
 		<li className="w-full h-24 flex flex-row py-1 px-2 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-800/50 border-2 border-b-0 first:border-b-2 rounded-md">
 			<div className="relative aspect-square rounded-full h-5/6 border-2 self-center dark:border-gray-600 mr-2">
 				{image ? (
-						<Image
-							src={URL.createObjectURL(image)}
-							alt="Streamer's image"
-							className="rounded-full"
-							fill
-						/>
-					) : (
-						<Image
-							src="/fallback_image.png"
-							sizes="50px"
-							alt="Streamer's image"
-							className="rounded-full"
-							fill
-						/>
-					)}
+					<Image src={URL.createObjectURL(image)} alt="Streamer's image" className="rounded-full" fill />
+				) : (
+					<Image src="/fallback_image.png" sizes="50px" alt="Streamer's image" className="rounded-full" fill />
+				)}
 			</div>
 			<div className="flex-1 flex flex-col justify-evenly sm:flex-row sm:justify-between sm:items-center">
 				<h3 className="text-center text-xl sm:text-left break-all sm:w-1/3">{props.name}</h3>

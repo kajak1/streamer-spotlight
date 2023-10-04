@@ -1,13 +1,44 @@
 import { NextFunction, Request, Response } from "express";
 import { ApplicationError } from "../errors/ApplicationError";
-import { usersRepository } from "../repositories/users.repostitory";
 import { logger } from "../logger";
+import { usersRepository } from "../repositories/users.repostitory";
 import { GetSpecificParams } from "../shared.types";
+import { getRedisClient } from "../redis";
+import { getPrismaClient } from "../prismaClient";
 
 class UsersController {
 	constructor() {
 		// empty
 	}
+
+	getData = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+		const { sessionId } = req.cookies;
+
+		if (!sessionId) {
+			res.status(401).json("no cookie");
+			return;
+		}
+
+		const userId = await getRedisClient().get(`session:${sessionId}`);
+
+		if (!userId) {
+			res.status(403).json("no user connected to this session id");
+			return;
+		}
+
+		const userData = await getPrismaClient().user.findUnique({
+			where: {
+				id: userId,
+			},
+		});
+
+		if (!userId) {
+			res.status(404).json("user does not exist");
+			return;
+		}
+
+		res.status(200).json(userData);
+	};
 
 	throwError = () => {
 		throw new ApplicationError("UNKNOWN_ERROR");

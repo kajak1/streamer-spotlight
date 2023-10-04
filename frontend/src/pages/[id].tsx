@@ -1,8 +1,4 @@
-import type {
-	GetStaticPaths,
-	GetStaticProps,
-	InferGetStaticPropsType
-} from "next";
+import type { GetStaticPaths, GetStaticProps, InferGetStaticPropsType } from "next";
 import Image from "next/image";
 import { useRandomImage } from "../hooks/use-random-image";
 import { streamersService } from "../services/streamers.service";
@@ -10,6 +6,14 @@ import { Streamer } from "../shared.types";
 
 export const getStaticPaths: GetStaticPaths = async () => {
 	const streamers = await streamersService.getAll();
+	console.log("getStaticPaths(); streamers:", streamers);
+
+	if (!streamers) {
+		return {
+			paths: [],
+			fallback: "blocking",
+		};
+	}
 
 	const ids = streamers.map(({ id }) => {
 		return {
@@ -23,20 +27,35 @@ export const getStaticPaths: GetStaticPaths = async () => {
 	};
 };
 
-export const getStaticProps: GetStaticProps<{ streamer: Streamer }, { id: string }> = async ({ params }) => {
+type StreamerStaticProps = {
+	streamer: Streamer;
+};
+
+type StaticParams = {
+	id: string;
+};
+
+export const getStaticProps: GetStaticProps<StreamerStaticProps, StaticParams> = async ({ params }) => {
 	if (typeof params?.id === "undefined") {
 		return {
 			notFound: true,
 		};
 	}
-	const streamer = await streamersService.getSpecific(params.id);
 
-	return {
-		props: {
-			streamer,
-		},
-		revalidate: 30,
-	};
+	try {
+		const streamer = await streamersService.getSpecific(params.id);
+
+		return {
+			props: {
+				streamer,
+			},
+			revalidate: 30,
+		};
+	} catch (e) {
+		return {
+			notFound: true,
+		};
+	}
 };
 
 export default function StreamerDetails({ streamer }: InferGetStaticPropsType<typeof getStaticProps>): JSX.Element {
@@ -47,20 +66,9 @@ export default function StreamerDetails({ streamer }: InferGetStaticPropsType<ty
 			<div className="flex flex-row items-center justify-between ">
 				<span className="inline-block relative aspect-square rounded-full h-36 border-2 border-gray-300">
 					{imageSrc ? (
-						<Image
-							src={URL.createObjectURL(imageSrc)}
-							alt="Streamer's image"
-							className="rounded-full"
-							fill
-						/>
+						<Image src={URL.createObjectURL(imageSrc)} alt="Streamer's image" className="rounded-full" fill />
 					) : (
-						<Image
-							src="/fallback_image.png"
-							sizes="50"
-							alt="Streamer's image"
-							className="rounded-full"
-							fill
-						/>
+						<Image src="/fallback_image.png" sizes="50" alt="Streamer's image" className="rounded-full" fill />
 					)}
 				</span>
 			</div>

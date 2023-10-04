@@ -1,5 +1,5 @@
 import { Server } from "socket.io";
-import { EVENTS } from "../websocket.config";
+import { EVENTS } from "../websocketServer.config";
 import { streamersRepository } from "./streamers.repository";
 import { getPrismaClient } from "../prismaClient";
 

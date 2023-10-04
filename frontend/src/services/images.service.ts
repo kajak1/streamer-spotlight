@@ -1,6 +1,5 @@
 import { Service } from "./service";
 
-// TODO extends a Service abstract class
 class ImagesService extends Service {
 	private IMAGE_ENDPOINT = `/seed`;
 

@@ -1,8 +1,45 @@
+import { GetServerSideProps } from "next";
 import { CreateStreamerButton } from "../components/CreateStreamerButton/CreateStreamerButton";
 import { Modal } from "../components/Modal";
 import { StreamerForm } from "../components/StreamerForm";
-import { StreamersList } from "../components/StreamersList";
+import { StreamerList } from "../components/StreamerList";
+import { StreamerListItems } from "../components/StreamerListItems";
 import { useModal } from "../hooks/use-modal";
+import { usersService } from "../services/users.service";
+import { isAxiosError } from "axios";
+
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+	try {
+		const sendWithCookies = usersService.attachCookiesOnce_SSR(usersService.getData);
+		console.log(ctx.req.cookies);
+		const user = await sendWithCookies(ctx.req.cookies, "/users/me");
+
+		if (!user) {
+			return {
+				redirect: {
+					destination: "/login",
+					permanent: false,
+				},
+			};
+		}
+
+		return {
+			props: {},
+		};
+	} catch (e) {
+		if (isAxiosError(e)) {
+			console.log("Home.getServerSideProps()", e.response?.data);
+		} else {
+			console.log("Home.getServerSideProps()", e);
+		}
+		return {
+			redirect: {
+				destination: "/login",
+				permanent: false,
+			},
+		};
+	}
+};
 
 export default function Home() {
 	const { isOpen, handleOpenModal, handleCloseModal } = useModal();
@@ -10,7 +47,9 @@ export default function Home() {
 	return (
 		<>
 			<CreateStreamerButton onClick={handleOpenModal} />
-			<StreamersList />
+			<StreamerList>
+				<StreamerListItems />
+			</StreamerList>
 			<Modal
 				isOpen={isOpen}
 				onHide={handleCloseModal}

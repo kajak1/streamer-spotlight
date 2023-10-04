@@ -1,6 +1,7 @@
 import type { UploadBody, VoteTypeBody } from "@backend/shared.types";
 import { GetAllResponse, Streamer } from "../shared.types";
 import { Service } from "./service";
+import { isAxiosError } from "axios";
 
 class StreamersService extends Service {
 	private STREAMERS_ENDPOINT = "/streamers";
@@ -9,10 +10,25 @@ class StreamersService extends Service {
 		super();
 	}
 
-	getAll = async () => {
-		const response = await this.api.get<GetAllResponse[]>(this.STREAMERS_ENDPOINT);
+	getAll = async (): Promise<GetAllResponse[]> => {
+		try {
+			const response = await this.api.get<GetAllResponse[]>(this.STREAMERS_ENDPOINT);
 
-		return response.data;
+			return response.data;
+		} catch (e) {
+			if (isAxiosError(e)) {
+				if (e.response?.status === 404) return [];
+				const serializedError = JSON.stringify(e.response?.data);
+				if (serializedError) {
+					console.error("serialized: ", serializedError);
+				} else {
+					console.error(e);
+				}
+			} else {
+				console.error(e);
+			}
+			throw Error("Failed to fetch the users");
+		}
 	};
 
 	getSpecific = async (id: string) => {

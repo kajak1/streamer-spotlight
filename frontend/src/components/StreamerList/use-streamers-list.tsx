@@ -5,7 +5,7 @@ import { EVENTS } from "@/src/websocket.config";
 import { useEffect } from "react";
 import { mutate } from "swr";
 
-function useStreamersList() {
+function useStreamerList() {
 	const streamersHelpers = useStreamers();
 
 	const streamers = streamersHelpers.streamers;
@@ -27,4 +27,4 @@ function useStreamersList() {
 	return streamersHelpers;
 }
 
-export { useStreamersList };
+export { useStreamerList };

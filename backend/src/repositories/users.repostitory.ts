@@ -7,11 +7,25 @@ class UsersRepository {
 		// empty
 	}
 
-	find = async (id: User["id"]) => {
+	isUsernameAvailable = async (username: User["username"]) => {
+		try {
+			const user = await this.find(username);
+
+			const isAvailable = user === null;
+	
+			return isAvailable;
+		} catch (e) {
+			// asd
+			return true
+		}
+
+	};
+
+	find = async (username: User["username"]) => {
 		try {
 			const foundUser = await getPrismaClient().user.findUnique({
 				where: {
-					id: id,
+					username: username,
 				},
 			});
 
@@ -21,11 +35,11 @@ class UsersRepository {
 		}
 	};
 
-	getVotes = async (id: User["id"]) => {
+	getVotes = async (username: User["username"]) => {
 		try {
 			const castedVotesRaw = await getPrismaClient().user.findUnique({
 				where: {
-					id: id,
+					username: username,
 				},
 				include: {
 					Downvote: {
@@ -47,11 +61,12 @@ class UsersRepository {
 		}
 	};
 
-	insert = async (id: User["id"]) => {
+	insert = async ({ username, password }: Pick<User, "username" | "password">) => {
 		try {
 			const createdUser = await getPrismaClient().user.create({
 				data: {
-					id: id,
+					username: username,
+					password: password,
 				},
 			});
 

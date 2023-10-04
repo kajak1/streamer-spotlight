@@ -10,8 +10,6 @@ services:
       - /app/node_modules
       - /app/.next
       - streamers-db:/etc/database
-    depends_on:
-      - frontend
     tty: true
     stdin_open: true
 
@@ -29,6 +27,8 @@ services:
     environment:
       - WATCHPACK_POLLING=true
       - BACKEND_URL=backend
+    depends_on:
+      - backend
 
   redis:
     image: redis:7.2.1-alpine

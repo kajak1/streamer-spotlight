@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import bodyParser from "body-parser";
 import cors from "cors";
 import express from "express";
@@ -9,10 +11,10 @@ import { usersRouter } from "./api/users.router";
 import cookieParser from "cookie-parser";
 import { authRouter } from "./api/auth.router";
 
-export function createServer() {
+export function createHttpServer() {
 	const app = express();
 
-	app.use(cors());
+	app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 	app.use(cookieParser());
 
 	app.use(bodyParser.json());
