@@ -1,7 +1,7 @@
-import axios, { AxiosInstance } from "axios";
+import axios, { AxiosInstance, CreateAxiosDefaults } from "axios";
 
-const API_ADDRESS = `http://${process.env.API_ADDRESS || process.env.NEXT_PUBLIC_API_ADDRESS}`;
-// const API_ADDRESS = `http://${process.env.NEXT_PUBLIC_API_ADDRESS}`;
+// const API_ADDRESS = `http://${process.env.API_ADDRESS || process.env.NEXT_PUBLIC_API_ADDRESS}`;
+const API_ADDRESS = `http://${process.env.NEXT_PUBLIC_API_ADDRESS}`;
 
 const serializeCookies = (cookies: Partial<{ [key: string]: string }>): string => {
 	return Object.keys(cookies)
@@ -12,9 +12,10 @@ const serializeCookies = (cookies: Partial<{ [key: string]: string }>): string =
 export abstract class Service {
 	protected api: AxiosInstance;
 
-	constructor(protected BASE_URL: string = API_ADDRESS) {
+	constructor(protected options?: CreateAxiosDefaults) {
 		this.api = axios.create({
-			baseURL: this.BASE_URL,
+			...options,
+			baseURL: options?.baseURL ?? API_ADDRESS,
 		});
 	}
 

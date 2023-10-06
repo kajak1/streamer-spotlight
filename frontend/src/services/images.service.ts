@@ -4,7 +4,9 @@ class ImagesService extends Service {
 	private IMAGE_ENDPOINT = `/seed`;
 
 	constructor() {
-		super("https://picsum.photos");
+		super({
+			baseURL: "https://picsum.photos",
+		});
 	}
 
 	getImage = async (seed: string | null | undefined) => {

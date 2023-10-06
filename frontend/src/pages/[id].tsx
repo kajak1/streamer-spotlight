@@ -4,7 +4,10 @@ import { useRandomImage } from "../hooks/use-random-image";
 import { streamersService } from "../services/streamers.service";
 import { Streamer } from "../shared.types";
 
-export const getStaticPaths: GetStaticPaths = async () => {
+export const getStaticPaths: GetStaticPaths = async (ctx) => {
+	// const sendWithCookies = streamersService.attachCookiesOnce_SSR(streamersService.getAll);
+	// const user = await sendWithCookies(ctx.req.cookies, "/streamers");
+
 	const streamers = await streamersService.getAll();
 	console.log("getStaticPaths(); streamers:", streamers);
 

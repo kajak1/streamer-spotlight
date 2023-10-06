@@ -4,7 +4,9 @@ class UsersService extends Service {
 	private USERS_ENDPOINT = "/users";
 
 	constructor() {
-		super();
+		super({
+			withCredentials: true,
+		});
 	}
 
 	getData = async () => {

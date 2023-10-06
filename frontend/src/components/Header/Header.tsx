@@ -30,7 +30,7 @@ export function AuthenticatedHeader({ user }: AuthenticatedHeaderProps) {
 	async function handleLogout() {
 		try {
 			await authService.logout();
-			mutate(SWR_KEYS.USER);
+			await mutate(SWR_KEYS.USER);
 		} catch (e) {
 			toast.error("Failed to logout");
 		}

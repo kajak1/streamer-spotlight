@@ -7,7 +7,9 @@ class StreamersService extends Service {
 	private STREAMERS_ENDPOINT = "/streamers";
 
 	constructor() {
-		super();
+		super({
+			withCredentials: true,
+		});
 	}
 
 	getAll = async (): Promise<GetAllResponse[]> => {

@@ -61,7 +61,7 @@ class AuthController {
 			httpOnly: true,
 			secure: true,
 			sameSite: "none",
-			maxAge: minute_ms * 5,
+			maxAge: minute_ms * 0.5,
 		});
 
 		res.send("Logged in");

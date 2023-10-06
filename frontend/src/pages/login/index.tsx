@@ -6,7 +6,7 @@ import { mutate } from "swr";
 import { authService } from "../../services/auth.service";
 import { SWR_KEYS } from "../../swr-keys";
 
-export default function Login(): JSX.Element {
+export default function Login() {
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
 
@@ -27,9 +27,10 @@ export default function Login(): JSX.Element {
 	return (
 		<div>
 			<h1>Login form</h1>
-			<form onSubmit={handleSubmit} className="flex flex-col items-stretch">
+			<form onSubmit={handleSubmit} className="flex flex-col items-stretch" autoComplete="off">
 				<label htmlFor="username">username</label>
 				<input
+					className="text-black"
 					type="text"
 					name="username"
 					id="username"
@@ -38,6 +39,7 @@ export default function Login(): JSX.Element {
 				/>
 				<label htmlFor="password">password</label>
 				<input
+					className="text-black"
 					type="text"
 					name="password"
 					id="password"
