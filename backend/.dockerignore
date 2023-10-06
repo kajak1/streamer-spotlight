@@ -1,5 +1,5 @@
-prisma/dev.db
-prisma/dev-journal.db
-prisma/migrations
+prisma/
+!prisma/schema.prisma
+!prisma/seed.ts
 
-mode_modules
+node_modules

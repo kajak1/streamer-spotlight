@@ -1,53 +1,67 @@
-import axios, { AxiosInstance } from "axios";
-import { Streamer, StreamerForm, Vote } from "../shared.types";
+import type { UploadBody, VoteTypeBody } from "@backend/shared.types";
+import { GetAllResponse, Streamer } from "../shared.types";
+import { Service } from "./service";
+import { isAxiosError } from "axios";
 
-interface VoteProps {
-	id: string;
-	voteType: Vote;
-}
-
-class StreamersService {
+class StreamersService extends Service {
 	private STREAMERS_ENDPOINT = "/streamers";
-	private BASE_URL = "http://localhost:3001";
-
-	private api: AxiosInstance;
 
 	constructor() {
-		this.api = axios.create({
-			baseURL: this.BASE_URL,
+		super({
+			withCredentials: true,
 		});
 	}
 
-	getAll = async () => {
-		const response = await this.api.get<Streamer[]>(this.STREAMERS_ENDPOINT);
+	getAll = async (): Promise<GetAllResponse[]> => {
+		try {
+			const response = await this.api.get<GetAllResponse[]>(this.STREAMERS_ENDPOINT);
+
+			return response.data;
+		} catch (e) {
+			if (isAxiosError(e)) {
+				if (e.response?.status === 404) return [];
+				const serializedError = JSON.stringify(e.response?.data);
+				if (serializedError) {
+					console.error("serialized: ", serializedError);
+				} else {
+					console.error(e);
+				}
+			} else {
+				console.error(e);
+			}
+			throw Error("Failed to fetch the users");
+		}
+	};
+
+	getSpecific = async (id: string) => {
+		const response = await this.api.get<Streamer>(`${this.STREAMERS_ENDPOINT}/${id}`);
 
 		return response.data;
 	};
 
-	getSpecific = async ({ id }: { id: string }) => {
-		const response = await this.api.get<Streamer>(
-			`${this.STREAMERS_ENDPOINT}/${id}`
-		);
+	getVoteCount = async (id: string) => {
+		const response = await this.api.get<{
+			id: string;
+			_count: {
+				Downvote: number;
+				Upvote: number;
+			};
+		}>(`${this.STREAMERS_ENDPOINT}/${id}/vote`);
 
 		return response.data;
 	};
 
-	async create({ streamerData }: { streamerData: StreamerForm }) {
-		const response = await this.api.post<Streamer>(
-			this.STREAMERS_ENDPOINT,
-			streamerData
-		);
+	async create({ streamerData }: { streamerData: UploadBody }) {
+		const response = await this.api.post<Streamer>(this.STREAMERS_ENDPOINT, streamerData);
 
 		return response.data;
 	}
 
-	vote = async ({ id, voteType }: VoteProps) => {
-		const response = await this.api.put<{ message: "voted successfully" }>(
-			`${this.STREAMERS_ENDPOINT}/${id}/vote`,
-			{
-				voteType,
-			}
-		);
+	vote = async ({ id, voteType, operation }: VoteTypeBody & { id: string }) => {
+		const response = await this.api.put<{ message: string }>(`${this.STREAMERS_ENDPOINT}/${id}/vote`, {
+			voteType,
+			operation,
+		});
 
 		return response.data;
 	};

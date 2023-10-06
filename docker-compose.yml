@@ -1,20 +1,43 @@
 services:
   backend:
     build: ./backend
-    command: "npm run start"
+    container_name: streamer-backend
+    command: "pnpm start:docker"
     ports:
       - 3001:3001
-    working_dir: /app
     volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - /app/.next
       - streamers-db:/etc/database
-    
+    tty: true
+    stdin_open: true
+
   frontend:
-    build: ./frontend
-    command: "npm run dev"
+    build: 
+      context: ./frontend
+      target: dev
+    container_name: streamer-web
     ports:
       - 3000:3000
-    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: "pnpm dev"
+    environment:
+      - WATCHPACK_POLLING=true
+      - BACKEND_URL=backend
+    depends_on:
+      - backend
 
+  redis:
+    image: redis:7.2.1-alpine
+    ports:
+      - 6379:6379
+    volumes:
+      - redis-volume:/redis_data
+    
 volumes:
+  redis-volume:
   streamers-db:
     external: false
