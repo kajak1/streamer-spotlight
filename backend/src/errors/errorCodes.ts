@@ -1,4 +1,8 @@
-export type ErrorCodes =
+export type ErrorTags =
+	| "FORBIDDEN_USERNAME"
+	| "INVALID_CREDENTIALS"
+	| "UNAUTHORIZED"
+	| "FORBIDDEN"
 	| "UNKNOWN_ERROR"
 	| "NOT_FOUND"
 	| "MISSING_PARAMETERS"
@@ -8,13 +12,30 @@ export type ErrorCodes =
 	| "PLATFORM_NOT_ALLOWED";
 
 type ErrorCodesMap = {
-	[ErrorTag in ErrorCodes]: {
+	[ErrorTag in ErrorTags]: {
 		code: number;
 		message: string;
 	};
 };
 
+// TODO clear up the differences between 401 and 403
 export const errorCodes: ErrorCodesMap = {
+	FORBIDDEN_USERNAME: {
+		code: 400,
+		message: "You cannot use that username",
+	},
+	INVALID_CREDENTIALS: {
+		code: 400,
+		message: "Invalid Username or Password",
+	},
+	FORBIDDEN: {
+		code: 403,
+		message: "Forbidden",
+	},
+	UNAUTHORIZED: {
+		code: 401,
+		message: "Unauthorized",
+	},
 	UNKNOWN_ERROR: {
 		code: 500,
 		message: "Internal server error",

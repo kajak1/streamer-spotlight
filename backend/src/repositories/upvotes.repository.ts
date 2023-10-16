@@ -1,11 +1,10 @@
 import { Prisma, Upvote } from "@prisma/client";
 import { ApplicationError } from "../errors/ApplicationError";
 import { getPrismaClient } from "../prismaClient";
+import { VoteRepository } from "./vote.repository.types";
 
-class UpvoteRepository {
-	constructor() {
-		// empty
-	}
+class UpvoteRepository implements VoteRepository<Upvote> {
+	constructor() {}
 
 	findAll = async () => {
 		try {
@@ -13,24 +12,26 @@ class UpvoteRepository {
 
 			return allUsers;
 		} catch (e) {
-			throw new ApplicationError("NOT_FOUND", e);
+			throw new ApplicationError("NOT_FOUND", {
+				baseError: e,
+			});
 		}
 	};
 
-	findUnique = async (params: Prisma.UpvoteFindUniqueArgs) => {
+	findUnique = async (args: Prisma.UpvoteFindUniqueArgs) => {
 		try {
-			const foundUser = await getPrismaClient().upvote.findUnique(params);
-			// const foundUser = await prisma.upvote.findUnique(params);
+			const foundUser = await getPrismaClient().upvote.findUnique(args);
 
 			return foundUser;
 		} catch (e) {
-			throw new ApplicationError("NOT_FOUND", e);
+			throw new ApplicationError("NOT_FOUND", {
+				baseError: e,
+			});
 		}
 	};
 
 	insert = async ({ streamerId, userId }: Pick<Upvote, "streamerId" | "userId">) => {
 		try {
-			// const createdStreamer = await prisma.upvote.create({
 			const createdStreamer = await getPrismaClient().upvote.create({
 				data: {
 					streamerId,
@@ -40,20 +41,23 @@ class UpvoteRepository {
 
 			return createdStreamer;
 		} catch (e) {
-			throw new ApplicationError("UNKNOWN_ERROR", e);
+			throw new ApplicationError("UNKNOWN_ERROR", {
+				baseError: e,
+			});
 		}
 	};
 
 	delete = async (params: Prisma.UpvoteWhereUniqueInput) => {
 		try {
-			// const deletedVote = await prisma.upvote.delete({
 			const deletedVote = await getPrismaClient().upvote.delete({
 				where: params,
 			});
 
 			return deletedVote.id;
 		} catch (e) {
-			throw new ApplicationError("UNKNOWN_ERROR", e);
+			throw new ApplicationError("UNKNOWN_ERROR", {
+				baseError: e,
+			});
 		}
 	};
 }

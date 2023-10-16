@@ -5,18 +5,21 @@
   "main": "src/index.ts",
   "scripts": {
     "start:docker": "npm run dev-server:docker",
-    "start:local": "npm run dev-server:local",
     "init-db:docker": "dotenv -e .env.development -- npx prisma migrate dev --name init",
-    "init-db:local": "dotenv -e .env.development.local -- npx prisma migrate dev name --init",
-    "prepare-prisma-dev_deprecated": "dotenv -e .env.development -- npx prisma migrate dev --name init",
     "dev-server:docker": "nodemon -L -r dotenv/config --exec ts-node-transpile-only src/index.ts dotenv_config_path=.env.development",
+    "prisma-reset:docker": "dotenv -e .env.development -- npx prisma migrate reset",
+    "prisma-seed:docker": "dotenv -e .env.development -- npx prisma db seed",
+    "start:local": "npm run dev-server:local",
+    "init-db:local": "dotenv -e .env.development.local -- npx prisma migrate dev name --init",
     "dev-server:local": "nodemon -L -r dotenv/config --exec ts-node-transpile-only src/index.ts dotenv_config_path=.env.development.local",
-    "test": "dotenv -e .env.test -- ts-mocha ./src/__tests__/**/*.ts",
+    "prisma-reset:local": "dotenv -e .env.development.local -- npx prisma migrate reset",
+    "prisma-seed:local": "dotenv -e .env.development.local -- npx prisma db seed",
+    "test-server": "npm run prepare-prisma-test && dotenv -e .env.test -- nodemon --watch ./**/*.ts --exec ts-node --transpile-only src/index.ts",
     "prepare-prisma-test": "dotenv -e .env.test -- npx prisma migrate dev",
-    "test-server": "npm run prepare-prisma-test && dotenv -e .env.test -- nodemon --watch ./**/*.ts --exec ts-node --transpile-only src/index.ts"
+    "test": "dotenv -e .env.test -- ts-mocha ./src/__tests__/**/*.ts"
   },
   "prisma": {
-    "seed": "dotenv -e .env.development -- ts-node --transpile-only ./prisma/seed.ts"
+    "seed": "ts-node --transpile-only ./prisma/seed.ts"
   },
   "keywords": [],
   "author": "",
@@ -27,6 +30,7 @@
     "@types/cls-hooked": "^4.3.4",
     "@types/cookie-parser": "^1.4.4",
     "@types/uuid": "^9.0.4",
+    "argon2": "^0.31.1",
     "body-parser": "^1.20.2",
     "chai": "^4.3.7",
     "cls-hooked": "^4.2.2",
@@ -38,6 +42,7 @@
     "express": "^4.18.2",
     "express-async-errors": "^3.1.1",
     "mocha": "^10.2.0",
+    "pbkdf2": "^3.1.2",
     "redis": "^4.6.10",
     "sinon": "^15.2.0",
     "socket.io": "^4.7.1",

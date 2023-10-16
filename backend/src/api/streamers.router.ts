@@ -1,6 +1,6 @@
 import express from "express";
-import { streamersController } from "../controllers/streamers.controller";
-import { handleAsyncErrors } from "../middleware/errorHandler";
+import { GetByUserSchema, streamersController } from "../controllers/streamers.controller";
+import { catchAsync } from "../middleware/errorHandler";
 import { validateBody, validateParams } from "../middleware/validate";
 import { GetSpecificParamsSchema, UploadBodySchema, VoteParamsSchema, voteTypeSchema } from "../shared.types";
 import { protect } from "../middleware/protect";
@@ -9,30 +9,31 @@ const streamersRouter = express.Router();
 
 const BASE_URL = "/streamers";
 
-streamersRouter.get(`${BASE_URL}`, handleAsyncErrors(streamersController.getAll));
+streamersRouter.get(`${BASE_URL}`, protect, catchAsync(streamersController.getAll));
+streamersRouter.get(`${BASE_URL}/users/:userId`, protect, validateParams(GetByUserSchema), catchAsync(streamersController.getByUser));
 
 streamersRouter.get(
 	`${BASE_URL}/:streamerId`,
 	protect,
 	validateParams(GetSpecificParamsSchema),
-	handleAsyncErrors(streamersController.getSpecific)
+	catchAsync(streamersController.getSpecific)
 );
 
-streamersRouter.post(`${BASE_URL}`, protect, validateBody(UploadBodySchema), handleAsyncErrors(streamersController.upload));
+streamersRouter.post(`${BASE_URL}`, protect, validateBody(UploadBodySchema), catchAsync(streamersController.upload));
 
 streamersRouter.put(
 	`${BASE_URL}/:streamerId/vote`,
 	protect,
 	validateParams(VoteParamsSchema),
 	validateBody(voteTypeSchema),
-	handleAsyncErrors(streamersController.vote)
+	catchAsync(streamersController.vote)
 );
 
 streamersRouter.get(
 	`${BASE_URL}/:streamerId/vote`,
 	protect,
 	validateParams(VoteParamsSchema),
-	handleAsyncErrors(streamersController.getVoteCount)
+	catchAsync(streamersController.getVoteCount)
 );
 
 export { streamersRouter };

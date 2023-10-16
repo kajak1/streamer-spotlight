@@ -5,7 +5,7 @@ import supertest from "supertest";
 import { StreamerSchema } from "../../prisma/generated/zod";
 import { VoteTypeBody } from "../shared.types";
 import cleanDb from "./clean-db";
-import { user101 } from "./sample-data";
+import { streamer101 } from "./sample-data";
 import seedDb from "./seed-db";
 import { env } from "../env";
 import z from "zod";
@@ -64,7 +64,7 @@ describe("Streamers", () => {
 		it("WHEN streamer is present THEN res code 200", async () => {
 			await seedDb();
 
-			const { statusCode } = await host.get(`/streamers/${user101.id}`);
+			const { statusCode } = await host.get(`/streamers/${streamer101.id}`);
 
 			expect(statusCode).to.equal(200);
 		});
@@ -72,7 +72,7 @@ describe("Streamers", () => {
 		it("WHEN streamer is not present THEN res code 404", async () => {
 			await cleanDb();
 
-			const { statusCode } = await host.get(`/streamers/${user101.id}`);
+			const { statusCode } = await host.get(`/streamers/${streamer101.id}`);
 
 			expect(statusCode).to.equal(404);
 		});
@@ -103,7 +103,7 @@ describe("Streamers", () => {
 			await seedDb();
 
 			const newUser: Streamer = {
-				...user101,
+				...streamer101,
 			};
 
 			const { statusCode } = await host.post("/streamers").send(newUser);
@@ -126,9 +126,9 @@ describe("Streamers", () => {
 
 			const addUpvoteBody: VoteTypeBody = { voteType: "upvote", operation: "add" };
 
-			const { statusCode: statusCode_PUT } = await host.put(`/streamers/${user101.id}/vote`).send(addUpvoteBody);
+			const { statusCode: statusCode_PUT } = await host.put(`/streamers/${streamer101.id}/vote`).send(addUpvoteBody);
 
-			const { statusCode: statusCode_GET, body } = await host.get(`/streamers/${user101.id}`);
+			const { statusCode: statusCode_GET, body } = await host.get(`/streamers/${streamer101.id}`);
 
 			const responseBodySchema = StreamerSchema.extend({
 				_count: z.object({
@@ -153,9 +153,9 @@ describe("Streamers", () => {
 				operation: "add",
 			};
 
-			const { statusCode: addDownvoteCode } = await host.put(`/streamers/${user101.id}/vote`).send(addDownvote);
+			const { statusCode: addDownvoteCode } = await host.put(`/streamers/${streamer101.id}/vote`).send(addDownvote);
 
-			const { body: streamerWithDownvote } = await host.get(`/streamers/${user101.id}`);
+			const { body: streamerWithDownvote } = await host.get(`/streamers/${streamer101.id}`);
 			const responseBodySchema_downvote = StreamerSchema.extend({
 				_count: z.object({
 					Downvote: z.number(),
@@ -173,9 +173,9 @@ describe("Streamers", () => {
 
 			const addUpvote: VoteTypeBody = { voteType: "upvote", operation: "add" };
 
-			const { statusCode: addUpvoteCode } = await host.put(`/streamers/${user101.id}/vote`).send(addUpvote);
+			const { statusCode: addUpvoteCode } = await host.put(`/streamers/${streamer101.id}/vote`).send(addUpvote);
 
-			const { body: streamerWithUpvote } = await host.get(`/streamers/${user101.id}`);
+			const { body: streamerWithUpvote } = await host.get(`/streamers/${streamer101.id}`);
 			const responseBodySchema_upvote = StreamerSchema.extend({
 				_count: z.object({
 					Downvote: z.number(),

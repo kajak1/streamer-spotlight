@@ -4,9 +4,7 @@ import { streamersRepository } from "./streamers.repository";
 import { getPrismaClient } from "../prismaClient";
 
 export class StreamersSocketRepository {
-	constructor(private io: Server) {
-		this.io = io;
-	}
+	constructor(private io: Server) {}
 
 	handleAddedStreamer = async (id: string) => {
 		const createdStreamer = await streamersRepository.findUnique({

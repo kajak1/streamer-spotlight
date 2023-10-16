@@ -5,7 +5,7 @@ class AuthService extends Service {
 
 	constructor() {
 		super({
-			withCredentials: true
+			withCredentials: true,
 		});
 	}
 
@@ -22,11 +22,9 @@ class AuthService extends Service {
 	};
 
 	logout = async () => {
+		const response = await this.api.post(`${this.AUTH_ENDPOINT}/logout`, { withCredentials: true });
 
-		// TODO change delete to post
-		const response = await this.api.post(`${this.AUTH_ENDPOINT}/login`, { withCredentials: true });
-
-		return response
+		return response;
 	};
 }
 

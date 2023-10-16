@@ -8,7 +8,6 @@ export function StreamerListItems(): JSX.Element {
 
 	return (
 		<>
-			<div>{isValidating && "refetching..."}</div>
 			{Boolean(error) && <p className="text-red-600 text-center">{error.message}</p>}
 			<ul className="flex flex-col-reverse">
 				{streamers?.length ? (

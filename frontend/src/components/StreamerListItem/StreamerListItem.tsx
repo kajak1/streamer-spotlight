@@ -14,7 +14,7 @@ export interface StreamerListItemProps {
 }
 
 export function StreamerListItem(props: StreamerListItemProps): JSX.Element {
-	const { handleVote, votes, areVotesLoading, votesError, isUpvoted, isDownvoted } = useStreamerListItem(props);
+	const { handleVote, votes, areVotesLoading, votesError, didUpvote: isUpvoted, didDownvote: isDownvoted } = useStreamerListItem(props);
 	const { data: image } = useRandomImage(props.name);
 
 	if (areVotesLoading) {

@@ -1,6 +1,7 @@
 import { v4 as uuid } from "uuid";
 import { getRedisClient } from "../redis";
 import { logger } from "../logger";
+import { ApplicationError } from "../errors/ApplicationError";
 
 // TODO clean up types in whole app
 export type LoginBody = {
@@ -8,7 +9,7 @@ export type LoginBody = {
 	password: string;
 };
 
-class AuthRepository {
+export class AuthRepository {
 	constructor() {}
 
 	private invalidateSession = async (sessionId: string): Promise<void> => {
@@ -19,7 +20,7 @@ class AuthRepository {
 		}
 	};
 
-	createSession = async (userId: string): Promise<string | null> => {
+	createSession = async (userId: string): Promise<string> => {
 		const sessionId = uuid();
 
 		try {
@@ -29,12 +30,14 @@ class AuthRepository {
 			const minute = second * 60;
 
 			// TODO make session length longer
-			setTimeout(() => this.invalidateSession(sessionId), 0.5 * minute);
+			setTimeout(() => this.invalidateSession(sessionId), minute / 3);
 
 			return sessionId;
 		} catch (e) {
 			logger.error(`Failed to create a session #id:${sessionId}`);
-			return null;
+			throw new ApplicationError("UNKNOWN_ERROR", {
+				moreSpecificMessage: "Failed to create a session",
+			});
 		}
 	};
 

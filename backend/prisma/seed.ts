@@ -1,42 +1,46 @@
-import { PrismaClient } from '@prisma/client'
-const prisma = new PrismaClient()
+import { PrismaClient } from "@prisma/client";
+import { platforms101 } from "../src/__tests__/sample-data";
+import { env } from "../src/env";
+
+const prisma = new PrismaClient();
 
 async function main() {
-  const twitch = prisma.platform.create({
-    data: {
-      type: "Twitch"
-    },
-  })
-  const tiktok = prisma.platform.create({
-    data: {
-      type: "TikTok"
-    },
-  })
-  const kick = prisma.platform.create({
-    data: {
-      type: "Kick"
-    },
-  })
-  const youtube = prisma.platform.create({
-    data: {
-      type: "YouTube"
-    },
-  })
-  const rumble = prisma.platform.create({
-    data: {
-      type: "Rumble"
-    },
-  })
+	const environment = env.NODE_ENV;
 
-  await prisma.$transaction([twitch, tiktok, kick, youtube, rumble])
+	switch (environment) {
+		case "development": {
+			const platforms = platforms101.map((platform) => {
+				return prisma.platform.create({
+					data: { ...platform },
+				});
+			});
+
+			const user = prisma.user.create({
+				data: { username: "admin", password: "admin" },
+			});
+
+			await prisma.$transaction([...platforms, user]);
+
+			break;
+		}
+		default: {
+			const platforms = platforms101.map((platform) => {
+				return prisma.platform.create({
+					data: { ...platform },
+				});
+			});
+
+			await prisma.$transaction([...platforms]);
+		}
+	}
 }
 
 main()
-  .then(async () => {
-    await prisma.$disconnect()
-  })
-  .catch(async (e) => {
-    console.error(e)
-    await prisma.$disconnect()
-    process.exit(1)
-  })
+	.then(async () => {
+		await prisma.$disconnect();
+	})
+	.catch(async (e) => {
+		console.error(e);
+		await prisma.$disconnect();
+		process.exit(1);
+	});

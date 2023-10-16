@@ -22,8 +22,8 @@ module.exports = {
 	},
 	plugins: ["@typescript-eslint"],
 	rules: {
+		"no-debugger": "warn",
 		"no-empty-function": "off",
-    "@typescript-eslint/no-empty-function": "warn"
+		"@typescript-eslint/no-empty-function": "warn",
 	},
 };
-

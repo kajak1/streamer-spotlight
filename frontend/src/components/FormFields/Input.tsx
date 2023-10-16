@@ -1,26 +1,25 @@
-import { HTMLAttributes } from "react";
+import { InputHTMLAttributes, LabelHTMLAttributes, ReactNode } from "react";
 import { FieldPath, UseFormRegister } from "react-hook-form";
 
 type Props<T extends Record<string, any>> = {
 	register: UseFormRegister<T>;
 	id: FieldPath<T>;
 	label: string;
-} & HTMLAttributes<HTMLInputElement>;
+} & InputHTMLAttributes<HTMLInputElement>;
 
-function Input<T extends Record<string, any>>({
-	id,
-	label,
-	register,
-	...rest
-}: Props<T>): JSX.Element {
+export function Input<T extends Record<string, any>>({ id, label, register, ...rest }: Props<T>): JSX.Element {
 	return (
 		<>
-			<label htmlFor={label} className="pb-2">
-				{label}
-			</label>
+			{/* <label htmlFor={id}>{label}</label> */}
 			<input {...rest} id={id} {...register(id)} />
 		</>
 	);
 }
 
-export { Input };
+type LabelProps = {
+	text: ReactNode;
+} & LabelHTMLAttributes<HTMLLabelElement>;
+
+export function Label({ text, ...rest }: LabelProps) {
+	return <label {...rest}>{text}</label>;
+}

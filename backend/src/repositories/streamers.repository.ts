@@ -2,6 +2,7 @@ import { Prisma, Streamer } from "@prisma/client";
 import { ApplicationError } from "../errors/ApplicationError";
 import { UploadBody } from "../shared.types";
 import { getPrismaClient } from "../prismaClient";
+import { getRedisClient } from "../redis";
 
 class StreamersRepository {
 	constructor() {}
@@ -22,7 +23,7 @@ class StreamersRepository {
 
 			return allUsers;
 		} catch (e) {
-			throw new ApplicationError("NOT_FOUND", e);
+			throw new ApplicationError("NOT_FOUND", { baseError: e });
 		}
 	};
 
@@ -67,15 +68,13 @@ class StreamersRepository {
 		return countedVotesRaw;
 	};
 
-	insert = async (streamerToUpload: UploadBody) => {
+	insert = async (streamerToUpload: UploadBody, uploaded_by: string) => {
 		const assignedPlatform = await getPrismaClient().platform.findUnique({
 			where: {
 				type: streamerToUpload.platform,
 			},
 		});
 
-		const platforms = await getPrismaClient().platform.findMany();
-		console.log("platforms:", platforms);
 		if (!assignedPlatform) throw new ApplicationError("PLATFORM_NOT_ALLOWED");
 
 		const createdStreamer = await getPrismaClient().streamer.create({
@@ -83,13 +82,11 @@ class StreamersRepository {
 				name: streamerToUpload.name,
 				description: streamerToUpload.description,
 				platformId: assignedPlatform.id,
+				uploaded_by: uploaded_by,
 			},
 			include: {
-				Platform: {
-					select: {
-						type: true,
-					},
-				},
+				Platform: true,
+				User: true,
 			},
 		});
 

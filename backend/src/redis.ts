@@ -20,12 +20,11 @@ export function initRedisClient(): void {
 function createRedisClient(): RedisClient {
 	client = createClient({
 		url: `redis://${env.REDIS_URL}`,
-		// url: "redis://redis:6379",
 	});
 
 	client.on("error", (err) => console.log("Redis Client Error", err));
 
-	client.connect().then((res) => {
+	client.connect().then(() => {
 		logger.info("Redis successfully connected");
 	});
 

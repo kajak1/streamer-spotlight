@@ -9,62 +9,65 @@ import { ClientOnly } from "../ClientOnly";
 import { ThemeSwitch } from "../ThemeSwitch";
 
 export function Header() {
-	const { user, loggedOut } = useUser();
+  const { user, loggedOut } = useUser();
 
-	if (loggedOut || !user) {
-		return <UnauthenticatedHeader />;
-	}
+  if (loggedOut || !user) {
+    return <UnauthenticatedHeader />;
+  }
 
-	return (
-		<ClientOnly>
-			<AuthenticatedHeader user={user} />
-		</ClientOnly>
-	);
+  return <AuthenticatedHeader user={user} />;
 }
 
 interface AuthenticatedHeaderProps {
-	user: User;
+  user: User;
 }
 
 export function AuthenticatedHeader({ user }: AuthenticatedHeaderProps) {
-	async function handleLogout() {
-		try {
-			await authService.logout();
-			await mutate(SWR_KEYS.USER);
-		} catch (e) {
-			toast.error("Failed to logout");
-		}
-	}
+  async function handleLogout() {
+    try {
+      await authService.logout();
+      await mutate(SWR_KEYS.USER);
+    } catch (e) {
+      toast.error("Failed to logout");
+    }
+  }
 
-	return (
-		<header className="w-full flex gap-2 justify-between items-baseline pt-3 pb-5 px-3 dark:text-gray-200 text-black">
-			<span className="flex flex-col flex-shrink-0">
-				<h1 className="text-2xl lg:w-auto lg:text-3xl">Streamer Spotlight</h1>
-				<i>hello {user?.username}!</i>
-			</span>
-			<nav className="md:pl-8 flex-1 flex justify-between">
-				<Link href="/" className="hover:text-blue-500 dark:hover:text-blue-500">
-					All streamers
-				</Link>
-				<Link href="/login" onClick={handleLogout}>
-					Logout
-				</Link>
-			</nav>
-			<ThemeSwitch />
-		</header>
-	);
+  return (
+    <header className="flex w-full items-baseline justify-between gap-2 px-3 pb-5 pt-3 text-black dark:text-gray-200">
+      <span className="flex flex-shrink-0 flex-col">
+        <h1 className="text-2xl lg:w-auto lg:text-3xl">Streamer Spotlight</h1>
+        <i>hello {user?.username}!</i>
+      </span>
+      <nav className="flex flex-1 justify-between md:pl-8">
+        <Link href="/" className="hover:text-blue-500 dark:hover:text-blue-500">
+          All streamers
+        </Link>
+        <Link
+          href="/uploaded"
+          className="hover:text-blue-500 dark:hover:text-blue-500"
+        >
+          Uploaded
+        </Link>
+        <Link
+          href="/login"
+          className="hover:text-blue-500 dark:hover:text-blue-500"
+          onClick={handleLogout}
+        >
+          Logout
+        </Link>
+      </nav>
+      <ThemeSwitch />
+    </header>
+  );
 }
 
 export function UnauthenticatedHeader() {
-	return (
-		<header className="w-full flex justify-between items-baseline pt-3 pb-5 px-3 dark:text-gray-200 text-black">
-			<h1 className="text-2xl w-2/6 lg:w-auto lg:text-3xl">Streamer Spotlight</h1>
-			<nav className="pl-4 md:pl-8 flex-1">
-				<Link href="/" className="hover:text-blue-500 dark:hover:text-blue-500">
-					All streamers
-				</Link>
-			</nav>
-			<ThemeSwitch />
-		</header>
-	);
+  return (
+    <header className="flex w-full items-baseline justify-between px-3 pb-5 pt-3 text-black dark:text-gray-200">
+      <h1 className="w-2/6 text-2xl lg:w-auto lg:text-3xl">
+        Streamer Spotlight
+      </h1>
+      <ThemeSwitch />
+    </header>
+  );
 }

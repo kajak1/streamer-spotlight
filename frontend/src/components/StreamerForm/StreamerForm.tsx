@@ -15,22 +15,16 @@ export function StreamerForm(props: Props): JSX.Element {
 	} = useStreamerForm(props);
 
 	return (
-		<form
-			onSubmit={handleSubmit}
-			className="dark:text-gray-200 dark:bg-gray-800"
-		>
+		<form onSubmit={handleSubmit} className="dark:text-gray-200 dark:bg-gray-800">
 			<h3 className="pb-4 text-xl">Upload</h3>
 			<p className="pb-2">Share your favourite streamer with others!</p>
 			<div className="flex flex-col py-1">
+				<FieldError when={Boolean(errors.name)} message={errors.name?.message} />
 				<Input
 					register={register}
 					id="name"
 					label="Name"
 					className="inline-block h-7 p-2 rounded-md border-2 text-black dark:text-gray-200 dark:bg-gray-700  border-gray-200 dark:border-gray-600"
-				/>
-				<FieldError
-					when={Boolean(errors.name)}
-					message={errors.name?.message}
 				/>
 			</div>
 			<div className="flex flex-col py-1">
@@ -48,10 +42,7 @@ export function StreamerForm(props: Props): JSX.Element {
 					<option value="TikTok">TikTok</option>
 					<option value="Rumble">Rumble</option>
 				</select>
-				<FieldError
-					when={Boolean(errors.platform)}
-					message={errors.platform?.message}
-				/>
+				<FieldError when={Boolean(errors.platform)} message={errors.platform?.message} />
 			</div>
 			<div className="flex flex-col py-1">
 				<label htmlFor="Description" className="pb-2">
@@ -62,10 +53,7 @@ export function StreamerForm(props: Props): JSX.Element {
 					className="text-black rounded-md border-2 px-2 py-1 border-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
 					{...register("description")}
 				/>
-				<FieldError
-					when={Boolean(errors.description)}
-					message={errors.description?.message}
-				/>
+				<FieldError when={Boolean(errors.description)} message={errors.description?.message} />
 			</div>
 
 			<button

@@ -1,73 +1,60 @@
+import argon2 from "argon2";
 import { NextFunction, Request, Response } from "express";
-import { LoginBody, authRepository } from "../repositories/auth.repository";
-import { usersRepository } from "../repositories/users.repostitory";
 import { ApplicationError } from "../errors/ApplicationError";
-import { logger } from "../logger";
-import { v4 as uuid } from "uuid";
 import { getRedisClient } from "../redis";
+import { LoginBody } from "../repositories/auth.repository";
+import { AuthService, authService } from "../services/auth.service";
+import { UsersService, usersService } from "../services/users.service";
+import { UsersRepository, usersRepository } from "../repositories/users.repostitory";
+
+interface AuthControllerConstructorParams {
+	usersService: UsersService;
+	usersRepository: UsersRepository;
+	authService: AuthService;
+}
 
 class AuthController {
-	constructor() {
-		// empty
-	}
+	constructor(
+		private usersService: UsersService,
+		private usersRepository: UsersRepository,
+		private authService: AuthService
+	) {}
 
-	register = async (req: Request<unknown, unknown, LoginBody>, res: Response, next: NextFunction): Promise<void> => {
+	throwError = async (req: Request) => {
 		const { username, password } = req.body;
 
-		const isUsernameAvailable = await usersRepository.isUsernameAvailable(username);
-		if (!isUsernameAvailable) throw new ApplicationError("NAME_ALREADY_EXISTS");
+		const cookie = await this.authService.login({ username, password });
+		// throw new ApplicationError("MISSING_BODY");
+	};
 
-		await usersRepository.insert({ username, password });
+	register = async (req: Request<unknown, unknown, LoginBody>, res: Response): Promise<void> => {
+		const { username, password } = req.body;
 
-		res.json("Registered");
+		const isUsernameAvailable = await this.usersService.isUsernameAvailable({ username: username });
+		if (!isUsernameAvailable) throw new ApplicationError("FORBIDDEN_USERNAME");
+
+		const hash = await argon2.hash(password, {
+			type: argon2.argon2id,
+		});
+
+		await this.usersRepository.insert({ username, password: hash });
+
+		res.status(200).json("Registered");
 	};
 
 	login = async (req: Request<unknown, unknown, LoginBody>, res: Response, next: NextFunction): Promise<void> => {
-		// decode from base64?
+		// TODO decode from base64?
 		const { username, password } = req.body;
 
-		// const sessionId = uuid();
-		// logger.warn(`set cookie sessionId to ${sessionId} `);
-
-		// const second_ms = 1000;
-		// const minute_ms = second_ms * 60;
-		// res.cookie("sessionId", sessionId, {
-		// 	httpOnly: true,
-		// 	secure: true,
-		// 	sameSite: "none",
-		// 	maxAge: minute_ms * 5,
-		// });
-
-		// res.send("Logged in");
-
-		if (!username || !password) {
-			res.status(401).json("Unauthorized");
-			return;
+		try {
+			const cookie = await this.authService.login({ username, password });
+			res.cookie(cookie.name, cookie.value, cookie.options).send("Logged in");
+		} catch (e) {
+			res.send("not logged");
 		}
-
-		const user = await usersRepository.find(username);
-		// TODO check OWASP for appropriate response message
-		if (!user) throw new ApplicationError("NOT_FOUND");
-
-		// TODO check if credentials are correct
-
-		const sessionId = await authRepository.createSession(user.id);
-
-		logger.warn(`set cookie sessionId to ${sessionId} `);
-
-		const second_ms = 1000;
-		const minute_ms = second_ms * 60;
-		res.cookie("sessionId", sessionId, {
-			httpOnly: true,
-			secure: true,
-			sameSite: "none",
-			maxAge: minute_ms * 0.5,
-		});
-
-		res.send("Logged in");
 	};
 
-	logout = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+	logout = async (req: Request, res: Response): Promise<void> => {
 		const { sessionId } = req.cookies;
 
 		try {
@@ -79,4 +66,4 @@ class AuthController {
 	};
 }
 
-export const authController = new AuthController();
+export const authController = new AuthController(usersService, usersRepository, authService);

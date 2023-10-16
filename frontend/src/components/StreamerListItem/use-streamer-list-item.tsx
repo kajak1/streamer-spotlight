@@ -16,8 +16,8 @@ function useStreamerListItem({ id, name }: Props) {
 	const { data: votes, isLoading, error } = useSWR([SWR_KEYS.STREAMERS, id], () => streamersService.getVoteCount(id));
 	const userVotes = useUserVotesOnStreamer(id);
 
-	const isUpvoted = userVotes?.isUpvoted ?? false;
-	const isDownvoted = userVotes?.isDownvoted ?? false;
+	const didUpvote = userVotes?.didUpvote ?? false;
+	const didDownvote = userVotes?.didDownvote ?? false;
 
 	useEffect(() => {
 		const voteHandler: ServerToClientEvents["VOTE"] = (updated) => {
@@ -46,7 +46,12 @@ function useStreamerListItem({ id, name }: Props) {
 					socket.emit(EVENTS.VOTE, id);
 				}
 			} catch (e) {
-				if (e instanceof AxiosError) toast.error(e.response?.data.error.message);
+				if (e instanceof AxiosError) {
+					if (e.response?.data) {
+						toast.error(e.response?.data.error.message);
+					}
+				}
+
 				console.error(e);
 			}
 		};
@@ -57,8 +62,8 @@ function useStreamerListItem({ id, name }: Props) {
 		votes,
 		areVotesLoading: isLoading,
 		votesError: error,
-		isDownvoted,
-		isUpvoted,
+		didDownvote: didDownvote,
+		didUpvote: didUpvote,
 	};
 }
 

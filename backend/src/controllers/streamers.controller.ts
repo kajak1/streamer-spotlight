@@ -1,35 +1,37 @@
-import { NextFunction, Request, Response } from "express";
-import { logger } from "../logger";
+import { Request, Response } from "express";
+import z from "zod";
 import { ApplicationError } from "../errors/ApplicationError";
-import { GetSpecificParams, UploadBody, VoteParams, VoteTypeBody } from "../shared.types";
 import { streamersRepository } from "../repositories/streamers.repository";
-import { streamersService } from "../services/streamers.service";
-import { getPrismaClient } from "../prismaClient";
+import { usersRepository } from "../repositories/users.repostitory";
+import { usersService } from "../services/users.service";
+import { voteService } from "../services/vote.service";
+import { GetSpecificParams, UploadBody, VoteParams, VoteTypeBody } from "../shared.types";
+
+export const GetByUserSchema = z.object({
+	userId: z.string(),
+});
+
+export type GeByUserSchema = z.infer<typeof GetByUserSchema>;
 
 class StreamersController {
-	constructor() {
-		// empty
-	}
+	constructor() {}
 
-	// getPlatforms = async (req: Request, res: Response, next: NextFunction) => {
-	// 	const platforms = await getPrismaClient().platform.findMany({});
-	// 	console.log("platforms:", platforms);
-	// };
+	getByUser = async (req: Request<{ userId: string }>, res: Response) => {
+		const { userId } = req.params;
 
-	// createPlatform = async (req: Request, res: Response, next: NextFunction) => {
-	// 	const { platformType } = req.params;
-	// 	if (!platformType) throw new ApplicationError("PLATFORM_NOT_ALLOWED");
-	// 	const platformCreated = await getPrismaClient().platform.create({
-	// 		data: {
-	// 			type: platformType,
-	// 		},
-	// 	});
-	// 	console.log("platformCreated:", platformCreated);
-	// };
+		const streamersByUserRaw = await usersRepository.findAddedStreamers({
+			id: userId,
+		});
 
-	async getAll(req: Request, res: Response, next: NextFunction) {
-		logger.warn(`streamers.controller.getAll(): req.ip: ${req.ip}`);
+		if (!streamersByUserRaw)
+			throw new ApplicationError("NOT_FOUND", {
+				moreSpecificMessage: "Streamer has not uploaded any streamers yet",
+			});
 
+		res.status(200).json(streamersByUserRaw.Streamer);
+	};
+
+	getAll = async (req: Request, res: Response) => {
 		const streamersRaw = await streamersRepository.findAll();
 
 		if (streamersRaw.length === 0) {
@@ -37,9 +39,9 @@ class StreamersController {
 		}
 
 		res.status(200).json(streamersRaw);
-	}
+	};
 
-	async getSpecific(req: Request<GetSpecificParams>, res: Response, next: NextFunction) {
+	getSpecific = async (req: Request<GetSpecificParams>, res: Response) => {
 		const { streamerId } = req.params;
 
 		const streamerFoundRaw = await streamersRepository.findAndCountVotes(streamerId);
@@ -49,10 +51,11 @@ class StreamersController {
 		}
 
 		res.status(200).json(streamerFoundRaw);
-	}
+	};
 
-	getVoteCount = async (req: Request<GetSpecificParams>, res: Response, next: NextFunction) => {
+	getVoteCount = async (req: Request<GetSpecificParams>, res: Response) => {
 		const { streamerId } = req.params;
+
 		const voteCountRaw = await streamersRepository.findVoteCount({
 			id: streamerId,
 		});
@@ -64,16 +67,16 @@ class StreamersController {
 		res.status(200).json(voteCountRaw);
 	};
 
-	async upload(req: Request<unknown, unknown, UploadBody>, res: Response, next: NextFunction) {
+	upload = async (req: Request<unknown, unknown, UploadBody>, res: Response) => {
 		const streamerToUpload = req.body;
 
-		const createdStreamer = await streamersRepository.insert(streamerToUpload);
-		logger.info(`Created streamer ${createdStreamer.name} #${createdStreamer.id}`);
+		const authorId = await usersService.getUserIdFromSession(req.cookies);
+		const createdStreamer = await streamersRepository.insert(streamerToUpload, authorId);
 
 		res.status(200).json(createdStreamer);
-	}
+	};
 
-	async vote(req: Request<VoteParams, unknown, VoteTypeBody>, res: Response, next: NextFunction) {
+	vote = async (req: Request<VoteParams, unknown, VoteTypeBody>, res: Response) => {
 		const { streamerId } = req.params;
 		const { voteType, operation } = req.body;
 
@@ -83,14 +86,16 @@ class StreamersController {
 			},
 		});
 
-		if (streamer === null) {
-			res.status(400).json({ message: "streamer you want to vote on does not exist" });
-			return;
-		}
+		// TODO check OWASP for proper message
+		if (streamer === null)
+			throw new ApplicationError("NOT_FOUND", {
+				moreSpecificMessage: "Streamer you want to vote on does not exist",
+			});
 
-		logger.warn(`streamers.controller.vote(): userId: ${req.ip}`);
-		const voteSucceeded = await streamersService.vote({
-			userId: req.ip,
+		const userId = await usersService.getUserIdFromSession(req.cookies);
+
+		const voteSucceeded = await voteService.vote({
+			userId: userId,
 			streamerId,
 			voteType,
 			operation,
@@ -102,7 +107,7 @@ class StreamersController {
 		}
 
 		res.status(200).json({ message: "voted successfully" });
-	}
+	};
 }
 
 export const streamersController = new StreamersController();

@@ -1,45 +1,53 @@
-import { User } from "@prisma/client";
+import { Prisma, User } from "@prisma/client";
 import { ApplicationError } from "../errors/ApplicationError";
 import { getPrismaClient } from "../prismaClient";
 
-class UsersRepository {
-	constructor() {
-		// empty
-	}
+export class UsersRepository {
+	constructor() {}
 
-	isUsernameAvailable = async (username: User["username"]) => {
+	findAll = async () => {
 		try {
-			const user = await this.find(username);
+			const usersRaw = await getPrismaClient().user.findMany({});
 
-			const isAvailable = user === null;
-	
-			return isAvailable;
+			const users = usersRaw.map((user): Pick<User, "id" | "username"> => {
+				return {
+					id: user.id,
+					username: user.username,
+				};
+			});
+
+			return users;
 		} catch (e) {
-			// asd
-			return true
+			throw new ApplicationError("NOT_FOUND", { baseError: e });
 		}
-
 	};
 
-	find = async (username: User["username"]) => {
+	find = async (args: Prisma.UserFindUniqueArgs["where"]) => {
 		try {
 			const foundUser = await getPrismaClient().user.findUnique({
-				where: {
-					username: username,
-				},
+				where: args,
 			});
 
 			return foundUser;
 		} catch (e) {
-			throw new ApplicationError("UNKNOWN_ERROR", e);
+			throw new ApplicationError("NOT_FOUND", { baseError: e });
 		}
 	};
 
-	getVotes = async (username: User["username"]) => {
+	findAddedStreamers = async (where: Prisma.UserFindUniqueArgs["where"]) => {
+		return await getPrismaClient().user.findUnique({
+			where: where,
+			select: {
+				Streamer: true,
+			},
+		});
+	};
+
+	getVotes = async (id: User["id"]) => {
 		try {
 			const castedVotesRaw = await getPrismaClient().user.findUnique({
 				where: {
-					username: username,
+					id: id,
 				},
 				include: {
 					Downvote: {
@@ -57,7 +65,7 @@ class UsersRepository {
 
 			return castedVotesRaw;
 		} catch (e) {
-			throw new ApplicationError("UNKNOWN_ERROR", e);
+			throw new ApplicationError("UNKNOWN_ERROR", { baseError: e });
 		}
 	};
 
@@ -72,7 +80,7 @@ class UsersRepository {
 
 			return createdUser;
 		} catch (e) {
-			throw new ApplicationError("UNKNOWN_ERROR", e);
+			throw new ApplicationError("UNKNOWN_ERROR", { baseError: e });
 		}
 	};
 }

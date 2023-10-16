@@ -15,21 +15,24 @@ datasource db {
 }
 
 model User {
-  id String @id @default(uuid())
+  id       String @id @default(uuid())
   username String @unique
-  password String 
+  password String
 
   Upvote   Upvote[]
   Downvote Downvote[]
+  Streamer Streamer[]
 }
 
 model Streamer {
   id          String  @id @default(uuid())
   name        String  @unique
   description String?
+  uploaded_by String
 
   platformId String
   Platform   Platform @relation(fields: [platformId], references: [id])
+  User       User     @relation(fields: [uploaded_by], references: [id])
 
   Upvote   Upvote[]
   Downvote Downvote[]
