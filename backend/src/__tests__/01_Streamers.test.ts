@@ -1,14 +1,14 @@
 import { Streamer } from "@prisma/client";
 import { expect } from "chai";
-import { beforeEach, describe } from "mocha";
+import { describe } from "mocha";
 import supertest from "supertest";
-import { StreamerSchema } from "../../prisma/generated/zod";
-import { VoteTypeBody } from "../shared.types";
-import cleanDb from "./clean-db";
-import { streamer101 } from "./sample-data";
-import seedDb from "./seed-db";
-import { env } from "../env";
 import z from "zod";
+import { StreamerSchema } from "../../prisma/generated/zod-typings";
+import { env } from "../env";
+import { VoteTypeBody } from "../shared.types";
+import { cleanDb } from "./clean-db";
+import { streamer101 } from "./sample-data";
+import { seedDb } from "./seed-db";
 
 describe("Streamers", () => {
 	let host: ReturnType<typeof supertest>;
@@ -18,26 +18,12 @@ describe("Streamers", () => {
 		await cleanDb();
 	});
 
-	beforeEach(async () => {
-		await seedDb();
-	});
-
-	afterEach(async () => {
-		await cleanDb();
-	});
-
 	describe("[GET] /streamers", () => {
-		beforeEach(async () => {
-			await seedDb();
-		});
-
 		afterEach(async () => {
 			await cleanDb();
 		});
 
 		it("WHEN database is empty THEN res code 404", async () => {
-			await cleanDb();
-
 			const { statusCode } = await host.get("/streamers");
 
 			expect(statusCode).to.equal(404);
@@ -53,25 +39,18 @@ describe("Streamers", () => {
 	});
 
 	describe("[GET] /streamers/:streamerId", () => {
-		beforeEach(async () => {
-			await seedDb();
-		});
-
 		afterEach(async () => {
 			await cleanDb();
 		});
 
 		it("WHEN streamer is present THEN res code 200", async () => {
 			await seedDb();
-
 			const { statusCode } = await host.get(`/streamers/${streamer101.id}`);
 
 			expect(statusCode).to.equal(200);
 		});
 
 		it("WHEN streamer is not present THEN res code 404", async () => {
-			await cleanDb();
-
 			const { statusCode } = await host.get(`/streamers/${streamer101.id}`);
 
 			expect(statusCode).to.equal(404);
@@ -79,10 +58,6 @@ describe("Streamers", () => {
 	});
 
 	describe("[POST] /streamers", () => {
-		beforeEach(async () => {
-			await seedDb();
-		});
-
 		afterEach(async () => {
 			await cleanDb();
 		});
@@ -101,11 +76,8 @@ describe("Streamers", () => {
 
 		it("WHEN streamer with this name already exists THEN res code 400 ", async () => {
 			await seedDb();
-
-			const newUser: Streamer = {
-				...streamer101,
-			};
-
+			
+			const newUser: Streamer = streamer101;
 			const { statusCode } = await host.post("/streamers").send(newUser);
 
 			expect(statusCode).to.equal(400);
@@ -113,10 +85,6 @@ describe("Streamers", () => {
 	});
 
 	describe("[PUT] /streamers/:streamerId/vote", () => {
-		beforeEach(async () => {
-			await seedDb();
-		});
-
 		afterEach(async () => {
 			await cleanDb();
 		});
@@ -148,6 +116,8 @@ describe("Streamers", () => {
 		});
 
 		it("WHEN upvote THEN remove downvote", async () => {
+			await seedDb();
+
 			const addDownvote: VoteTypeBody = {
 				voteType: "downvote",
 				operation: "add",

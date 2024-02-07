@@ -1,10 +1,10 @@
 import { PrismaClient } from "@prisma/client";
-import { platforms101, user101 } from "../src/__tests__/sample-data";
-import { env } from "../src/env";
+import { platforms101, user101 } from "./sample-data";
+import { env } from "../env";
 
 const prisma = new PrismaClient();
 
-async function main() {
+function seeder() {
 	const environment = env.NODE_ENV;
 
 	switch (environment) {
@@ -16,12 +16,10 @@ async function main() {
 			});
 
 			const user = prisma.user.create({
-				data: user101
+				data: user101,
 			});
 
-			await prisma.$transaction([...platforms, user]);
-
-			break;
+			return prisma.$transaction([...platforms, user]);
 		}
 		default: {
 			const platforms = platforms101.map((platform) => {
@@ -30,17 +28,16 @@ async function main() {
 				});
 			});
 
-			await prisma.$transaction([...platforms]);
+			return prisma.$transaction([...platforms]);
 		}
 	}
 }
 
-main()
-	.then(async () => {
-		await prisma.$disconnect();
-	})
-	.catch(async (e) => {
-		console.error(e);
-		await prisma.$disconnect();
-		process.exit(1);
-	});
+export async function seedDb() {
+	return seeder()
+		.then(() => prisma.$disconnect())
+		.catch((e) => {
+			console.error(e);
+			prisma.$disconnect();
+		});
+}

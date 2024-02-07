@@ -2,8 +2,8 @@ import { Platform, Streamer, User } from "@prisma/client";
 
 export const user101: User = {
 	id: "4b451aae-a594-41aa-b41f-3939ef0aceda",
-	username: "test_username",
-	password: "test_password",
+	username: "user101",
+	password: "user101",
 };
 
 export const streamer101: Streamer = {
