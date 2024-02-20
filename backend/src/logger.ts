@@ -6,11 +6,13 @@ const logFormatter = format.printf(({ level, message, timestamp }) => {
 	return `[${timestamp}] [${level}]: "${message}"`;
 });
 
-export const logger = winston.createLogger({
-	format: format.combine(
-		format.colorize({ level: true }),
-		format.timestamp({ format: "YY-MM-DD HH:mm:ss" }),
-		logFormatter
-	),
-	transports: [new transports.Console()],
-});
+export function createLogger(): winston.Logger {
+	return winston.createLogger({
+		format: format.combine(
+			format.colorize({ level: true }),
+			format.timestamp({ format: "YY-MM-DD HH:mm:ss" }),
+			logFormatter
+		),
+		transports: [new transports.Console()],
+	});
+}

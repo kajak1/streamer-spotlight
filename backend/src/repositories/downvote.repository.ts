@@ -1,9 +1,9 @@
 import { Downvote, Prisma } from "@prisma/client";
-import { ApplicationError } from "../errors/ApplicationError";
+import { HttpError } from "../errors/ApplicationError";
 import { getPrismaClient } from "../prismaClient";
-import { VoteRepository } from "./upvotes.repository";
+import { VoteRepository } from "./vote.repository.types";
 
-class DownvoteRepository implements VoteRepository<Downvote> {
+export class DownvoteRepository implements VoteRepository {
 	constructor() {}
 
 	findAll = async () => {
@@ -12,9 +12,13 @@ class DownvoteRepository implements VoteRepository<Downvote> {
 
 			return allUsers;
 		} catch (e) {
-			throw new ApplicationError("NOT_FOUND", {
-				baseError: e,
-			});
+			if (e instanceof Error) {
+				throw new HttpError("NOT_FOUND", {
+					baseError: e,
+				});
+			} else {
+				throw new HttpError("UNKNOWN_ERROR");
+			}
 		}
 	};
 
@@ -24,9 +28,13 @@ class DownvoteRepository implements VoteRepository<Downvote> {
 
 			return foundUser;
 		} catch (e) {
-			throw new ApplicationError("NOT_FOUND", {
-				baseError: e,
-			});
+			if (e instanceof Error) {
+				throw new HttpError("NOT_FOUND", {
+					baseError: e,
+				});
+			} else {
+				throw new HttpError("UNKNOWN_ERROR");
+			}
 		}
 	};
 
@@ -41,9 +49,13 @@ class DownvoteRepository implements VoteRepository<Downvote> {
 
 			return createdStreamer;
 		} catch (e) {
-			throw new ApplicationError("UNKNOWN_ERROR", {
-				baseError: e,
-			});
+			if (e instanceof Error) {
+				throw new HttpError("NOT_FOUND", {
+					baseError: e,
+				});
+			} else {
+				throw new HttpError("UNKNOWN_ERROR");
+			}
 		}
 	};
 
@@ -55,11 +67,13 @@ class DownvoteRepository implements VoteRepository<Downvote> {
 
 			return deletedVote.id;
 		} catch (e) {
-			throw new ApplicationError("UNKNOWN_ERROR", {
-				baseError: e,
-			});
+			if (e instanceof Error) {
+				throw new HttpError("NOT_FOUND", {
+					baseError: e,
+				});
+			} else {
+				throw new HttpError("UNKNOWN_ERROR");
+			}
 		}
 	};
 }
-
-export const downvoteRepository = new DownvoteRepository();

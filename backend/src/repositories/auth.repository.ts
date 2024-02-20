@@ -1,7 +1,8 @@
 import { v4 as uuid } from "uuid";
 import { getRedisClient } from "../redis";
-import { logger } from "../logger";
-import { ApplicationError } from "../errors/ApplicationError";
+import { HttpError } from "../errors/ApplicationError";
+import { inject, injectable } from "tsyringe";
+import { Logger } from "winston";
 
 // TODO clean up types in whole app
 export type LoginBody = {
@@ -9,44 +10,46 @@ export type LoginBody = {
 	password: string;
 };
 
+@injectable()
 export class AuthRepository {
-	constructor() {}
+	constructor(@inject("Logger") private logger: Logger) {}
 
 	private invalidateSession = async (sessionId: string): Promise<void> => {
 		try {
-			await getRedisClient().del(`session:${sessionId}`);
+			const client = await getRedisClient()
+			await client.del(`session:${sessionId}`);
+
 		} catch (e) {
-			logger.error(`Failed to remove session #id:${sessionId} from redis`);
+			this.logger.error(`Failed to remove session #id:${sessionId} from redis`);
 		}
 	};
 
-	createSession = async (userId: string): Promise<string> => {
+	createSession = async (userId: string, duration: number): Promise<string> => {
 		const sessionId = uuid();
 
 		try {
-			await getRedisClient().set(`session:${sessionId}`, userId);
-
-			const second = 1000;
-			const minute = second * 60;
+			const client = await getRedisClient()
+			await client.set(`session:${sessionId}`, userId);
 
 			// TODO make session length longer
-			setTimeout(() => this.invalidateSession(sessionId), minute / 3);
+			setTimeout(() => this.invalidateSession(sessionId), duration);
 
 			return sessionId;
 		} catch (e) {
-			logger.error(`Failed to create a session #id:${sessionId}`);
-			throw new ApplicationError("UNKNOWN_ERROR", {
-				moreSpecificMessage: "Failed to create a session",
+			this.logger.error(`Failed to create a session #id:${sessionId}`);
+			throw new HttpError("UNKNOWN_ERROR", {
+				description: "Failed to create a session",
 			});
 		}
 	};
 
 	isSessionActive = async (sessionId: string): Promise<boolean> => {
-		const possibleSession = await getRedisClient().get(`session:${sessionId}`);
+		const client = await getRedisClient()
+		const possibleSession = await client.get(`session:${sessionId}`);
 
 		const isSessionActive = possibleSession !== null;
 		return isSessionActive;
 	};
 }
 
-export const authRepository = new AuthRepository();
+// export const authRepository = new AuthRepository();

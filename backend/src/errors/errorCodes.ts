@@ -14,7 +14,7 @@ export type ErrorTags =
 type ErrorCodesMap = {
 	[ErrorTag in ErrorTags]: {
 		code: number;
-		message: string;
+		description: string;
 	};
 };
 
@@ -22,46 +22,46 @@ type ErrorCodesMap = {
 export const errorCodes: ErrorCodesMap = {
 	FORBIDDEN_USERNAME: {
 		code: 400,
-		message: "You cannot use that username",
+		description: "You cannot use that username",
 	},
 	INVALID_CREDENTIALS: {
-		code: 400,
-		message: "Invalid Username or Password",
+		code: 401,
+		description: "Invalid Username or Password",
 	},
 	FORBIDDEN: {
 		code: 403,
-		message: "Forbidden",
+		description: "Forbidden",
 	},
 	UNAUTHORIZED: {
 		code: 401,
-		message: "Unauthorized",
+		description: "Unauthorized",
 	},
 	UNKNOWN_ERROR: {
 		code: 500,
-		message: "Internal server error",
+		description: "Internal server error",
 	},
 	NOT_FOUND: {
 		code: 404,
-		message: "Not found",
+		description: "Not found",
 	},
 	MISSING_PARAMETERS: {
 		code: 400,
-		message: "Missing parameter",
+		description: "Missing parameter",
 	},
 	MISSING_BODY: {
 		code: 400,
-		message: "Missing body",
+		description: "Missing body",
 	},
 	NAME_ALREADY_EXISTS: {
 		code: 400,
-		message: "Streamer with this name already exists",
+		description: "Streamer with this name already exists",
 	},
 	ALREADY_VOTED: {
 		code: 400,
-		message: "You have already voted",
+		description: "You have already voted",
 	},
 	PLATFORM_NOT_ALLOWED: {
 		code: 400,
-		message: "Chosen platform is not allowed",
+		description: "Chosen platform is not allowed",
 	},
 };

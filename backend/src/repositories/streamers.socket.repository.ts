@@ -1,13 +1,15 @@
 import { Server } from "socket.io";
 import { EVENTS } from "../websocketServer.config";
-import { streamersRepository } from "./streamers.repository";
 import { getPrismaClient } from "../prismaClient";
+import { injectable, container, inject } from "tsyringe";
+import { StreamersRepository } from "./streamers.repository";
 
+@injectable()
 export class StreamersSocketRepository {
-	constructor(private io: Server) {}
+	constructor(@inject("WebsocketServer") private io: Server, private streamersRepository: StreamersRepository) {}
 
 	handleAddedStreamer = async (id: string) => {
-		const createdStreamer = await streamersRepository.findUnique({
+		const createdStreamer = await this.streamersRepository.findUnique({
 			where: {
 				id: id,
 			},
@@ -45,6 +47,6 @@ export class StreamersSocketRepository {
 	};
 }
 
-export function createStreamersSocketRepository(io: Server) {
-	return new StreamersSocketRepository(io);
+export function createStreamersSocketRepository() {
+	return container.resolve(StreamersSocketRepository);
 }

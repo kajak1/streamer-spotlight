@@ -1,7 +1,9 @@
 import { Prisma, User } from "@prisma/client";
-import { ApplicationError } from "../errors/ApplicationError";
+import { HttpError } from "../errors/ApplicationError";
 import { getPrismaClient } from "../prismaClient";
+import { injectable } from "tsyringe";
 
+@injectable()
 export class UsersRepository {
 	constructor() {}
 
@@ -18,7 +20,13 @@ export class UsersRepository {
 
 			return users;
 		} catch (e) {
-			throw new ApplicationError("NOT_FOUND", { baseError: e });
+			if (e instanceof Error) {
+				throw new HttpError("NOT_FOUND", {
+					baseError: e,
+				});
+			} else {
+				throw new HttpError("UNKNOWN_ERROR");
+			}
 		}
 	};
 
@@ -30,7 +38,13 @@ export class UsersRepository {
 
 			return foundUser;
 		} catch (e) {
-			throw new ApplicationError("NOT_FOUND", { baseError: e });
+			if (e instanceof Error) {
+				throw new HttpError("NOT_FOUND", {
+					baseError: e,
+				});
+			} else {
+				throw new HttpError("UNKNOWN_ERROR");
+			}
 		}
 	};
 
@@ -65,7 +79,13 @@ export class UsersRepository {
 
 			return castedVotesRaw;
 		} catch (e) {
-			throw new ApplicationError("UNKNOWN_ERROR", { baseError: e });
+			if (e instanceof Error) {
+				throw new HttpError("NOT_FOUND", {
+					baseError: e,
+				});
+			} else {
+				throw new HttpError("UNKNOWN_ERROR");
+			}
 		}
 	};
 
@@ -80,9 +100,13 @@ export class UsersRepository {
 
 			return createdUser;
 		} catch (e) {
-			throw new ApplicationError("UNKNOWN_ERROR", { baseError: e });
+			if (e instanceof Error) {
+				throw new HttpError("NOT_FOUND", {
+					baseError: e,
+				});
+			} else {
+				throw new HttpError("UNKNOWN_ERROR");
+			}
 		}
 	};
 }
-
-export const usersRepository = new UsersRepository();

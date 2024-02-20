@@ -1,7 +1,9 @@
-import { ApplicationError } from "../errors/ApplicationError";
+import { injectable } from "tsyringe";
+import { HttpError } from "../errors/ApplicationError";
 import { getRedisClient } from "../redis";
-import { UsersRepository, usersRepository } from "../repositories/users.repostitory";
+import { UsersRepository } from "../repositories/users.repostitory";
 
+@injectable()
 export class UsersService {
 	constructor(private usersRepository: UsersRepository) {}
 
@@ -18,15 +20,16 @@ export class UsersService {
 	};
 
 	getUserIdFromSession = async ({ sessionId }: Record<string, string>): Promise<string> => {
-		const userId = await getRedisClient().get(`session:${sessionId}`);
-		if (!userId) throw new ApplicationError("UNAUTHORIZED");
+		const redis = await getRedisClient()
+		const userId = await redis.get(`session:${sessionId}`);
+		if (!userId) throw new HttpError("UNAUTHORIZED");
 
 		return userId;
 	};
 
 	getVotesOnStreamer = async (userId: string, streamerId: string) => {
 		const castedVotesRaw = await this.usersRepository.getVotes(userId);
-		if (!castedVotesRaw) throw new ApplicationError("UNKNOWN_ERROR");
+		if (!castedVotesRaw) throw new HttpError("UNKNOWN_ERROR");
 
 		const didDownvote = castedVotesRaw.Downvote.map(({ streamerId }) => streamerId).reduce((prev, curr) => {
 			if (prev === true) return prev;
@@ -44,5 +47,3 @@ export class UsersService {
 		};
 	};
 }
-
-export const usersService = new UsersService(usersRepository);

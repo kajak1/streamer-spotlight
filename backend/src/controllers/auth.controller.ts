@@ -1,37 +1,28 @@
-import argon2 from "argon2";
+import * as argon2 from "argon2";
 import { NextFunction, Request, Response } from "express";
-import { ApplicationError } from "../errors/ApplicationError";
+import { HttpError } from "../errors/ApplicationError";
 import { getRedisClient } from "../redis";
 import { LoginBody } from "../repositories/auth.repository";
-import { AuthService, authService } from "../services/auth.service";
-import { UsersService, usersService } from "../services/users.service";
-import { UsersRepository, usersRepository } from "../repositories/users.repostitory";
+import { AuthService } from "../services/auth.service";
+import { UsersService } from "../services/users.service";
+import { UsersRepository } from "../repositories/users.repostitory";
+import { injectable } from "tsyringe";
 
-interface AuthControllerConstructorParams {
-	usersService: UsersService;
-	usersRepository: UsersRepository;
-	authService: AuthService;
-}
-
-class AuthController {
+@injectable()
+export class AuthController {
 	constructor(
 		private usersService: UsersService,
 		private usersRepository: UsersRepository,
 		private authService: AuthService
 	) {}
 
-	throwError = async (req: Request) => {
-		const { username, password } = req.body;
-
-		const cookie = await this.authService.login({ username, password });
-		// throw new ApplicationError("MISSING_BODY");
-	};
+	throwError = async (req: Request) => {};
 
 	register = async (req: Request<unknown, unknown, LoginBody>, res: Response): Promise<void> => {
 		const { username, password } = req.body;
 
 		const isUsernameAvailable = await this.usersService.isUsernameAvailable({ username: username });
-		if (!isUsernameAvailable) throw new ApplicationError("FORBIDDEN_USERNAME");
+		if (!isUsernameAvailable) throw new HttpError("FORBIDDEN_USERNAME");
 
 		const hash = await argon2.hash(password, {
 			type: argon2.argon2id,
@@ -46,24 +37,20 @@ class AuthController {
 		// TODO decode from base64?
 		const { username, password } = req.body;
 
-		try {
-			const cookie = await this.authService.login({ username, password });
-			res.cookie(cookie.name, cookie.value, cookie.options).send("Logged in");
-		} catch (e) {
-			res.send("not logged");
-		}
+		const cookie = await this.authService.login({ username, password });
+		res.status(200).cookie(cookie.name, cookie.value, cookie.options).json("Logged in");
 	};
 
 	logout = async (req: Request, res: Response): Promise<void> => {
 		const { sessionId } = req.cookies;
 
 		try {
-			await getRedisClient().del(`session:${sessionId}`);
+			const redis = await getRedisClient();
+			redis.del(`session:${sessionId}`);
+
 			res.status(200).json("Logged out successfully");
 		} catch (e) {
 			res.status(500).json("Failed to logout");
 		}
 	};
 }
-
-export const authController = new AuthController(usersService, usersRepository, authService);

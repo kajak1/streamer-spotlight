@@ -1,14 +1,20 @@
-import express from "express";
+import { Router } from "express";
 import { catchAsync } from "../middleware/errorHandler";
-import { usersController } from "../controllers/users.controller.";
+import { UsersController } from "../controllers/users.controller.";
 import { protect } from "../middleware/protect";
+import { container } from "tsyringe";
 
-const usersRouter = express.Router();
+export function usersRouting(): Router {
+	const usersRouter = Router();
 
-const BASE_URL = "/users";
+	const usersController = container.resolve(UsersController);
 
-usersRouter.get(`${BASE_URL}/me`, protect, catchAsync(usersController.getData));
-usersRouter.get(`${BASE_URL}/votes`, protect, catchAsync(usersController.getAllVotes));
-usersRouter.get(`${BASE_URL}/votes/:streamerId`, protect, catchAsync(usersController.getVotesOnStreamer));
+	const BASE_URL = "/users";
 
-export { usersRouter };
+	usersRouter.get(`${BASE_URL}/error`, catchAsync(usersController.throwError));
+	usersRouter.get(`${BASE_URL}/me`, protect, catchAsync(usersController.getData));
+	usersRouter.get(`${BASE_URL}/votes`, protect, catchAsync(usersController.getAllVotes));
+	usersRouter.get(`${BASE_URL}/votes/:streamerId`, protect, catchAsync(usersController.getVotesOnStreamer));
+
+	return usersRouter;
+}

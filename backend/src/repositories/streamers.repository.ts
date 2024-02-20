@@ -1,29 +1,24 @@
 import { Prisma, Streamer } from "@prisma/client";
-import { ApplicationError } from "../errors/ApplicationError";
+import { HttpError } from "../errors/ApplicationError";
 import { UploadBody } from "../shared.types";
 import { getPrismaClient } from "../prismaClient";
-import { getRedisClient } from "../redis";
 
-class StreamersRepository {
+export class StreamersRepository {
 	constructor() {}
 
 	findAll = async () => {
 		try {
 			const allUsers = await getPrismaClient().streamer.findMany({});
-			// const allUsers = await getPrismaClient().streamer.findMany({
-			// 	include: {
-			// 		_count: {
-			// 			select: {
-			// 				Downvote: true,
-			// 				Upvote: true,
-			// 			},
-			// 		},
-			// 	},
-			// });
 
 			return allUsers;
 		} catch (e) {
-			throw new ApplicationError("NOT_FOUND", { baseError: e });
+			if (e instanceof Error) {
+				throw new HttpError("NOT_FOUND", {
+					baseError: e,
+				});
+			} else {
+				throw new HttpError("UNKNOWN_ERROR");
+			}
 		}
 	};
 
@@ -75,7 +70,7 @@ class StreamersRepository {
 			},
 		});
 
-		if (!assignedPlatform) throw new ApplicationError("PLATFORM_NOT_ALLOWED");
+		if (!assignedPlatform) throw new HttpError("PLATFORM_NOT_ALLOWED");
 
 		const createdStreamer = await getPrismaClient().streamer.create({
 			data: {
@@ -93,5 +88,3 @@ class StreamersRepository {
 		return createdStreamer;
 	};
 }
-
-export const streamersRepository = new StreamersRepository();

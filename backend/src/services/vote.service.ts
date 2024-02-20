@@ -1,29 +1,29 @@
-import { Downvote, Upvote } from "@prisma/client";
-import { ApplicationError } from "../errors/ApplicationError";
+import { injectable } from "tsyringe";
+import { HttpError } from "../errors/ApplicationError";
 import { createTransaction } from "../prismaClient";
-import { downvoteRepository } from "../repositories/downvote.repository";
-import { upvoteRepository } from "../repositories/upvotes.repository";
+import { DownvoteRepository } from "../repositories/downvote.repository";
+import { UpvoteRepository } from "../repositories/upvotes.repository";
 import { VoteTypeBody } from "../shared.types";
-import { VoteRepository } from "../repositories/vote.repository.types";
 
 type VoteProps = {
 	userId: string;
 	streamerId: string;
 } & VoteTypeBody;
 
+@injectable()
 export class VoteService {
-	constructor(private upvoteRepository: VoteRepository<Upvote>, private downvoteRepository: VoteRepository<Downvote>) {}
+	constructor(private upvoteRepository: UpvoteRepository, private downvoteRepository: DownvoteRepository) {}
 
 	selectRepository<T extends VoteTypeBody["voteType"]>(
 		voteType: T
-	): T extends "upvote" ? VoteRepository<Upvote> : VoteRepository<Downvote> {
+	): T extends "upvote" ? UpvoteRepository : DownvoteRepository {
 		switch (voteType) {
 			case "upvote":
 				return this.upvoteRepository;
 			case "downvote":
 				return this.downvoteRepository;
 			default:
-				throw new ApplicationError("UNKNOWN_ERROR");
+				throw new HttpError("UNKNOWN_ERROR");
 		}
 	}
 
@@ -75,9 +75,13 @@ export class VoteService {
 						this.castVote({ voteType, streamerId, userId }),
 					]);
 				}).catch((e: unknown) => {
-					throw new ApplicationError("ALREADY_VOTED", {
-						baseError: e,
-					});
+					if (e instanceof Error) {
+						throw new HttpError("ALREADY_VOTED", {
+							baseError: e,
+						});
+					} else {
+						throw new HttpError("UNKNOWN_ERROR")
+					}
 				});
 
 				return true;
@@ -95,5 +99,3 @@ export class VoteService {
 		}
 	};
 }
-
-export const voteService = new VoteService(upvoteRepository, downvoteRepository);

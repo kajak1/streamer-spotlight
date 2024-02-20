@@ -1,23 +1,16 @@
-import { CustomError } from "./CustomError";
-import { ErrorTags } from "./errorCodes";
+import { AdditionalInfo, CustomError } from "./CustomError";
+import { ErrorTags, errorCodes } from "./errorCodes";
 
-export class ApplicationError extends CustomError {
-	baseError?: unknown;
-	moreSpecificMessage?: string;
+interface HttpErrorExtraProperties {
+	readonly code: number;
+}
 
-	constructor(
-		message: ErrorTags,
-		optional?: {
-			moreSpecificMessage?: string;
-			baseError?: unknown;
-		}
-	) {
-		super(message);
+export class HttpError extends CustomError implements HttpErrorExtraProperties {
+	readonly code: number;
+	
+	constructor(message: ErrorTags, optional?: AdditionalInfo) {
+		super(message, optional);
 
-		this.baseError = optional?.baseError;
-
-		if (optional?.moreSpecificMessage) {
-			this.moreSpecificMessage = optional?.moreSpecificMessage;
-		}
+		this.code = errorCodes[message].code;
 	}
 }
