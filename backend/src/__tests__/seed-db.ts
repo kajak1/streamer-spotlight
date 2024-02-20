@@ -1,10 +1,11 @@
 import { PrismaClient } from "@prisma/client";
 import { platforms101, user101 } from "./sample-data";
 import { env } from "../env";
+import * as argon2 from "argon2";
 
 const prisma = new PrismaClient();
 
-function seeder() {
+async function seeder() {
 	const environment = env.NODE_ENV;
 
 	switch (environment) {
@@ -15,8 +16,12 @@ function seeder() {
 				});
 			});
 
+			const passwordHash = await argon2.hash(user101.password, {
+				type: argon2.argon2id,
+			});
+
 			const user = prisma.user.create({
-				data: user101,
+				data: { ...user101, password: passwordHash },
 			});
 
 			return prisma.$transaction([...platforms, user]);

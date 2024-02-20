@@ -1,20 +1,21 @@
 import { Platform, Streamer, User } from "@prisma/client";
 
-export const user101: User = {
+export const user101 = {
 	id: "4b451aae-a594-41aa-b41f-3939ef0aceda",
 	username: "user101",
-	password: "user101",
-};
+	password: "user101-password",
 
-export const streamer101: Streamer = {
+} as const satisfies User;
+
+export const streamer101 = {
 	id: "e0ade5cb-a933-45dd-8828-04fb933b395f",
 	name: "streamer101",
 	description: "lorem impsum",
 	platformId: "ead18de8-1ec5-4e3f-8c70-1d8de1b43ef8",
 	uploaded_by: user101.id,
-};
+} as const satisfies Streamer;
 
-export const platforms101: Platform[] = [
+export const platforms101 = [
 	{
 		id: "7df30f1e-0652-4826-98cc-a45c71b4edcd",
 		type: "Twitch",
@@ -35,4 +36,4 @@ export const platforms101: Platform[] = [
 		id: "c0cd5b2c-8226-4c4c-8588-2ed510c6d9c8",
 		type: "Kick",
 	},
-];
+] as const satisfies Platform[];
