@@ -8,7 +8,6 @@ COPY package.json .
 COPY pnpm-lock.yaml .
 
 RUN pnpm install
-RUN pnpm add cookie-parser
 
 COPY . .
 

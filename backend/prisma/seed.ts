@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import * as argon2 from "argon2";
 import { platforms101, user101 } from "../src/__tests__/sample-data";
 import { env } from "../src/env";
 
@@ -15,8 +16,12 @@ async function main() {
 				});
 			});
 
+			const hash = await argon2.hash(user101.password, {
+				type: argon2.argon2id,
+			});
+
 			const user = prisma.user.create({
-				data: user101
+				data: { ...user101, password: hash },
 			});
 
 			await prisma.$transaction([...platforms, user]);
