@@ -30,12 +30,6 @@ class StreamersService extends Service {
     } catch (e) {
       if (isAxiosError(e)) {
         if (e.response?.status === 404) return [];
-        const serializedError = JSON.stringify(e.response?.data);
-        if (serializedError) {
-          console.error("serialized: ", serializedError);
-        } else {
-          console.error(e);
-        }
       } else {
         console.error(e);
       }
