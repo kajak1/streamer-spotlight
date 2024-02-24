@@ -1,5 +1,7 @@
 node_modules
 
+.pnpm-store
+
 prisma/migrations
 prisma/dev.db
 prisma/test.db

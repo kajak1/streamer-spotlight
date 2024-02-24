@@ -34,6 +34,10 @@ export class UsersRepository {
 		try {
 			const foundUser = await getPrismaClient().user.findUnique({
 				where: args,
+				select: {
+					username: true,
+					id: true,
+				},
 			});
 
 			return foundUser;
