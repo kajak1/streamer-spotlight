@@ -1,4 +1,3 @@
-import * as argon2 from "argon2";
 import { NextFunction, Request, Response } from "express";
 import { HttpError } from "../errors/ApplicationError";
 import { getRedisClient } from "../redis";
@@ -24,9 +23,7 @@ export class AuthController {
 		const isUsernameAvailable = await this.usersService.isUsernameAvailable({ username: username });
 		if (!isUsernameAvailable) throw new HttpError("FORBIDDEN_USERNAME");
 
-		const hash = await argon2.hash(password, {
-			type: argon2.argon2id,
-		});
+		const hash = await this.authService.hash(password);
 
 		await this.usersRepository.insert({ username, password: hash });
 
@@ -42,7 +39,7 @@ export class AuthController {
 	};
 
 	logout = async (req: Request, res: Response): Promise<void> => {
-		const { sessionId } = req.cookies;
+		const { sessionId } = req.signedCookies;
 
 		try {
 			const redis = await getRedisClient();

@@ -8,12 +8,13 @@ import { requestLogger } from "./middleware/requestLogger";
 import { usersRouting } from "./api/users.router";
 import cookieParser from "cookie-parser";
 import { authRouting } from "./api/auth.router";
+import { env } from "./env";
 
 export function createExpressApp() {
 	const app = express();
 
 	app.use(cors({ origin: "http://localhost:3000", credentials: true }));
-	app.use(cookieParser());
+	app.use(cookieParser(env.COOKIE_SECRET));
 
 	app.use(json());
 	app.use(requestLogger);

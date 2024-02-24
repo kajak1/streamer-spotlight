@@ -13,6 +13,7 @@ registerDependencies();
 
 const logger = container.resolve<Logger>("Logger");
 const httpServer = container.resolve<http.Server>("HttpServer");
+container.resolve("WebsocketServer");
 
 httpServer.listen(PORT, HOST, () => {
 	logger.info(`Running on http://${HOST}:${PORT}`);
@@ -23,4 +24,4 @@ initRedisClient();
 process.on("SIGTERM", () => {
 	logger.info(`Closing server on http://${HOST}:${PORT}`);
 	httpServer.close();
-})
+});

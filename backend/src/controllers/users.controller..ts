@@ -18,7 +18,7 @@ export class UsersController {
 	};
 
 	getData = async (req: Request, res: Response): Promise<void> => {
-		const userId = await this.usersService.getUserIdFromSession(req.cookies);
+		const userId = await this.usersService.getUserIdFromSession(req.signedCookies);
 
 		const userData = await this.usersRepository.find({ id: userId });
 
@@ -30,7 +30,7 @@ export class UsersController {
 	};
 
 	getAllVotes = async (req: Request, res: Response) => {
-		const userId = await this.usersService.getUserIdFromSession(req.cookies);
+		const userId = await this.usersService.getUserIdFromSession(req.signedCookies);
 		if (!userId) throw new HttpError("UNAUTHORIZED");
 
 		const castedVotes = await this.usersRepository.getVotes(userId);
@@ -43,7 +43,7 @@ export class UsersController {
 	getVotesOnStreamer = async (req: Request<GetSpecificParams>, res: Response) => {
 		const { streamerId } = req.params;
 
-		const userId = await this.usersService.getUserIdFromSession(req.cookies);
+		const userId = await this.usersService.getUserIdFromSession(req.signedCookies);
 
 		const { didUpvote, didDownvote } = await this.usersService.getVotesOnStreamer(userId, streamerId);
 

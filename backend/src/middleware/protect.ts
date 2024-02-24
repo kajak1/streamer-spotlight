@@ -3,11 +3,15 @@ import { AuthRepository } from "../repositories/auth.repository";
 import { HttpError } from "../errors/ApplicationError";
 import { catchAsync } from "./errorHandler";
 import { container } from "tsyringe";
+import { Logger } from "winston";
 
 async function handleProtect(req: Request, res: Response, next: NextFunction): Promise<void> {
-	const { sessionId } = req.cookies;
-
+	const { sessionId } = req.signedCookies;
+	// const { sessionId } = req.signedCookies;
+	const logger = container.resolve<Logger>("Logger");
+	
 	if (!sessionId) {
+		logger.warn(`no ID: ${sessionId}`)
 		throw new HttpError("UNAUTHORIZED");
 	}
 

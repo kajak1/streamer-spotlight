@@ -1,7 +1,7 @@
 import { Server } from "socket.io";
-import { EVENTS } from "../websocketServer.config";
+import { inject, injectable } from "tsyringe";
 import { getPrismaClient } from "../prismaClient";
-import { injectable, container, inject } from "tsyringe";
+import { EVENTS } from "../websocketServer.config";
 import { StreamersRepository } from "./streamers.repository";
 
 @injectable()
@@ -47,6 +47,4 @@ export class StreamersSocketRepository {
 	};
 }
 
-export function createStreamersSocketRepository() {
-	return container.resolve(StreamersSocketRepository);
-}
+

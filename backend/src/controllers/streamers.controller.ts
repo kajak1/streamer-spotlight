@@ -77,7 +77,7 @@ export class StreamersController {
 	upload = async (req: Request<unknown, unknown, UploadBody>, res: Response) => {
 		const streamerToUpload = req.body;
 
-		const authorId = await this.usersService.getUserIdFromSession(req.cookies);
+		const authorId = await this.usersService.getUserIdFromSession(req.signedCookies);
 		const createdStreamer = await this.streamersRepository.insert(streamerToUpload, authorId);
 
 		res.status(200).json(createdStreamer);
@@ -99,7 +99,7 @@ export class StreamersController {
 				description: "Streamer you want to vote on does not exist",
 			});
 
-		const userId = await this.usersService.getUserIdFromSession(req.cookies);
+		const userId = await this.usersService.getUserIdFromSession(req.signedCookies);
 
 		const voteSucceeded = await this.voteService.vote({
 			userId: userId,

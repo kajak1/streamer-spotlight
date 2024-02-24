@@ -63,12 +63,40 @@ describe("Auth", () => {
 				const key = properties[0]?.split("=")[0];
 
 				expect(key).to.equal("sessionId");
+				expect(properties).to.include("Secure", "cookie must have a Secure prop");
+				expect(properties).to.include("HttpOnly", "cookie must have a HttpOnly prop");
+			}
+
+			expect(body).to.equal("Logged in");
+		});
+
+		it("WHEN session exists and cookie is provided THEN log in", async () => {
+			await seedDb();
+
+			const correctCredentials: LoginBody = {
+				username: user101.username,
+				password: user101.password,
+			};
+
+			const { statusCode, body, headers } = await host.post("/auth/login").send(correctCredentials);
+
+			expect(statusCode).to.equal(200);
+			expect(headers).to.haveOwnProperty("set-cookie");
+
+			if ("set-cookie" in headers) {
+				const cookie: string = headers["set-cookie"][0];
+				const properties = cookie.split(";").map((prop) => prop.trim());
+
+				const key = properties[0]?.split("=")[0];
+
+				expect(key).to.equal("sessionId");
 				expect(properties).to.include("Secure");
 				expect(properties).to.include("HttpOnly");
 			}
 
 			expect(body).to.equal("Logged in");
 		});
+
 	});
 
 	describe("[POST] /auth/register", () => {

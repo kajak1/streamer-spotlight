@@ -1,17 +1,16 @@
 import http from "http";
 import { Server } from "socket.io";
-import { socketLoggerIncoming, socketLoggerOutcoming } from "./middleware/requestLogger";
-import { createStreamersSocketRepository } from "./repositories/streamers.socket.repository";
-import { EVENTS, serverOptions } from "./websocketServer.config";
-import { container } from "tsyringe";
+import { container, delay } from "tsyringe";
 import { Logger } from "winston";
+import { socketLoggerIncoming, socketLoggerOutcoming } from "./middleware/requestLogger";
+import { StreamersSocketRepository } from "./repositories/streamers.socket.repository";
+import { EVENTS, serverOptions } from "./websocketServer.config";
 
-export function createWebsocketServer(httpServer: http.Server) {
+export function createWebsocketServer(httpServer: http.Server): Server {
 	const io = new Server(httpServer, serverOptions);
-
-	const streamersSocketRepository = createStreamersSocketRepository();
-
 	const logger = container.resolve<Logger>("Logger");
+
+	const streamersSocketRepository = container.resolve(delay(() => StreamersSocketRepository));
 
 	io.on(EVENTS.CONNECTION, (socket) => {
 		logger.info(`Connected: ${socket.id}`);

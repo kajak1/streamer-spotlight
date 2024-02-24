@@ -24,7 +24,7 @@ function handleHttpError(res: Response, err: HttpError) {
 		}
 	}
 
-	return res.status(err.code).json(err.serialize());
+	return res.status(err.code).json(err.prepareToSend());
 }
 
 function handleValidationError(res: Response, err: ValidationError) {

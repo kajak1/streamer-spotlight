@@ -16,8 +16,8 @@ export class AuthRepository {
 
 	private invalidateSession = async (sessionId: string): Promise<void> => {
 		try {
-			const client = await getRedisClient()
-			await client.del(`session:${sessionId}`);
+			const redis = await getRedisClient()
+			await redis.del(`session:${sessionId}`);
 
 		} catch (e) {
 			this.logger.error(`Failed to remove session #id:${sessionId} from redis`);
@@ -26,12 +26,12 @@ export class AuthRepository {
 
 	createSession = async (userId: string, duration: number): Promise<string> => {
 		const sessionId = uuid();
-
+		// 9c11e7ec-2b64-4fa5-8bd3-81093aac6ca3
 		try {
-			const client = await getRedisClient()
-			await client.set(`session:${sessionId}`, userId);
+			const redis = await getRedisClient()
+			await redis.set(`session:${sessionId}`, userId);
+			this.logger.warn(`Created session #id:${sessionId}`);
 
-			// TODO make session length longer
 			setTimeout(() => this.invalidateSession(sessionId), duration);
 
 			return sessionId;
@@ -44,12 +44,10 @@ export class AuthRepository {
 	};
 
 	isSessionActive = async (sessionId: string): Promise<boolean> => {
-		const client = await getRedisClient()
-		const possibleSession = await client.get(`session:${sessionId}`);
+		const redis = await getRedisClient()
+		const possibleSession = await redis.get(`session:${sessionId}`);
 
 		const isSessionActive = possibleSession !== null;
 		return isSessionActive;
 	};
 }
-
-// export const authRepository = new AuthRepository();

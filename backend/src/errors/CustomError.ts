@@ -1,5 +1,5 @@
 import z from "zod";
-import { ErrorTags } from "./errorCodes";
+import { ErrorTags, errorCodes } from "./errorCodes";
 
 export const SerializedErrorSchema = z.object({
 	error: z.object({
@@ -45,6 +45,22 @@ abstract class CustomError extends Error implements AdditionalInfo {
 		}
 
 		return JSON.stringify(serialized);
+	}
+	
+	public prepareToSend(): object {
+		const serialized: SerializedError = {
+			error: {
+				message: this.message,
+			},
+		};
+
+		if (this.description) {
+			serialized.error.description = this.description;
+		} else {
+			serialized.error.description = errorCodes[this.message].description
+		}
+
+		return serialized;
 	}
 }
 
