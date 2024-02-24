@@ -10,7 +10,7 @@ class AuthService extends Service {
 	}
 
 	login = async (credentials: LoginBody) => {
-		const response = await this.api.post(`${this.AUTH_ENDPOINT}/login`, credentials, { withCredentials: true });
+		const response = await this.api.post(`${this.AUTH_ENDPOINT}/login`, credentials);
 
 		return response;
 	};
@@ -22,7 +22,7 @@ class AuthService extends Service {
 	};
 
 	logout = async () => {
-		const response = await this.api.post(`${this.AUTH_ENDPOINT}/logout`, { withCredentials: true });
+		const response = await this.api.post(`${this.AUTH_ENDPOINT}/logout`);
 
 		return response;
 	};

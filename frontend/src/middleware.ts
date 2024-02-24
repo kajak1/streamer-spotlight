@@ -11,7 +11,7 @@ function serializeCookie<const T extends RequestCookie>(
 export async function middleware(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith("/login")) {
     const sessionId = request.cookies.get("sessionId");
-		console.log("sessionID present", !!sessionId)
+
     if (!sessionId) return;
 
     const userActive = await fetch("http://localhost:3001/users/me", {
@@ -53,5 +53,3 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: ["/", "/login"],
 };
-
-// export function middleware() {}

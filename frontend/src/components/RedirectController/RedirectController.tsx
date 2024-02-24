@@ -1,40 +1,32 @@
-import { ReactNode, useCallback, useEffect, useState } from "react";
-import { useUser } from "../../hooks/use-user";
+import { useIsRouting } from "@/src/hooks/use-is-routing";
+import { Url } from "next/dist/shared/lib/router/router";
 import Router from "next/router";
+import { ReactNode, useEffect } from "react";
+import { useUser } from "../../hooks/use-user";
+
+function redirect(url: Url): void {
+  if (Router.asPath !== url) {
+    Router.replace(url);
+  }
+}
 
 export function RedirectController({ children }: { children: ReactNode }) {
   const { loggedOut } = useUser();
-  const [routeChanged, setRouteChanged] = useState(false);
+  const isRouting = useIsRouting();
 
-  const handleStartRouting = useCallback(() => {
-    setRouteChanged(true);
-  }, []);
-
-  const handleStopRouting = useCallback(() => {
-    setRouteChanged(false);
-  }, []);
+  console.log("RedirectController.render(), loggedOut:", loggedOut);
 
   useEffect(() => {
-    console.log(`RedirectController running loggedOut: ${loggedOut}`);
-    if (routeChanged) return;
+    if (isRouting) return;
     if (!Router.isReady) return;
 
-    Router.events.on("routeChangeStart", handleStartRouting);
-    Router.events.on("routeChangeComplete", handleStopRouting);
-    Router.events.on("routeChangeError", handleStopRouting);
-
     if (loggedOut) {
-      Router.replace("/login");
+      redirect("/login");
     } else {
-      Router.replace("/");
+      redirect("/");
     }
-
-    return () => {
-      Router.events.off("routeChangeStart", handleStartRouting);
-      Router.events.off("routeChangeComplete", handleStopRouting);
-      Router.events.off("routeChangeError", handleStopRouting);
-    };
-  }, [loggedOut, handleStartRouting, handleStopRouting, routeChanged]);
+  }, [loggedOut, isRouting]);
+  // }, [loggedOut]);
 
   return children;
 }

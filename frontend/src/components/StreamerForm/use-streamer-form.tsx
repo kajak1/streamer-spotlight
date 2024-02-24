@@ -7,42 +7,39 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AxiosError } from "axios";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
+import { StreamerFormProps } from ".";
 
-interface Props {
-	onSubmit: () => void;
-}
+function useStreamerForm(props: StreamerFormProps) {
+  const formHelpers = useForm<StreamerForm>({
+    resolver: zodResolver(StreamerFormSchema),
+  });
 
-function useStreamerForm(props: Props) {
-	const formHelpers = useForm<StreamerForm>({
-		resolver: zodResolver(StreamerFormSchema),
-	});
+  async function onSubmit(data: StreamerForm) {
+    try {
+      const { id } = await streamersService.create({ streamerData: data });
+      if (socket.connected) {
+        socket.emit(EVENTS.STREAMER_ADDED, id);
+      }
+      toast.success("Added streamer");
+    } catch (e) {
+      console.error(e);
+      if (
+        e instanceof AxiosError &&
+        e.response?.data &&
+        isErrorResponse(e.response.data)
+      ) {
+        toast.error(e.response?.data.error.message);
+        console.error(e.response?.data.error.message);
+      }
+    }
 
-	async function onSubmit(data: StreamerForm) {
-		try {
-			const { id } = await streamersService.create({ streamerData: data });
-			if (socket.connected) {
-				socket.emit(EVENTS.STREAMER_ADDED, id);
-			}
-			toast.success("Added streamer");
-		} catch (e) {
-			console.error(e);
-			if (
-				e instanceof AxiosError &&
-				e.response?.data &&
-				isErrorResponse(e.response.data)
-			) {
-				toast.error(e.response?.data.error.message);
-				console.error(e.response?.data.error.message);
-			}
-		}
+    props.onSubmit?.();
+  }
 
-		props.onSubmit();
-	}
-
-	return {
-		...formHelpers,
-		handleSubmit: formHelpers.handleSubmit(onSubmit),
-	};
+  return {
+    ...formHelpers,
+    handleSubmit: formHelpers.handleSubmit(onSubmit),
+  };
 }
 
 export { useStreamerForm };

@@ -47,7 +47,7 @@ export abstract class Service {
     return requestInterceptor;
   };
 
-  injectCookies =
+  public injectCookies =
     <T, R>(fn: (...args: T[]) => Promise<R>, ...args: T[]) =>
     async (
       ...secondArgs: Parameters<typeof this.createRequestCookieInterceptor>

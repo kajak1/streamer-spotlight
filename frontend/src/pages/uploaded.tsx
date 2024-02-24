@@ -22,9 +22,7 @@ export const getServerSideProps: GetServerSideProps<UploadedProps> = async (
   }
 
   try {
-    const getDataWithCookies = usersService.injectCookies(
-      usersService.getData,
-    );
+    const getDataWithCookies = usersService.injectCookies(usersService.getData);
     const { id } = await getDataWithCookies(ctx.req.cookies, "/users/me");
 
     const getByUserWithCookies = streamersService.injectCookies(

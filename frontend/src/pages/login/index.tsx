@@ -10,9 +10,11 @@ import { z } from "zod";
 import { authService } from "../../services/auth.service";
 import { SWR_KEYS } from "../../swr-keys";
 
+// TODO backend/src/error/CustomError.ts prepareToSend() type
 export interface ErrorShape {
   error: {
     message: string;
+    description: string;
   };
 }
 
@@ -23,20 +25,10 @@ const LoginSchema = z.object({
     })
     .min(1, {
       message: "Username must contain at least 1 character",
-    })
-    .max(64, {
-      message: "Username cannot exceed 64 characters",
     }),
-  password: z
-    .string({
-      required_error: "Password is required",
-    })
-    .min(8, {
-      message: "Password must be at least 8 characters",
-    })
-    .max(64, {
-      message: "Password cannot exceed 64 characters",
-    }),
+  password: z.string({
+    required_error: "Password is required",
+  }),
 });
 
 type LoginSchema = z.infer<typeof LoginSchema>;
@@ -57,17 +49,24 @@ export default function Login() {
       console.log("Login response:", resposne.data);
       Router.replace("/");
     } catch (e) {
-      console.error(e);
       if (isAxiosError<ErrorShape>(e)) {
-        if (e.response?.data) toast.error(`${e.response.data.error.message}`);
-      }
-    }
+        const description = e.response?.data.error.description;
 
-    mutate(SWR_KEYS.USER);
+        if (description) {
+          toast.error(`${description}`);
+        } else {
+          toast.error("Server Error");
+        }
+      } else {
+        toast.error("Server Error");
+      }
+    } finally {
+      mutate(SWR_KEYS.USER);
+    }
   }
 
   return (
-    <section className="grid w-64">
+    <article className="box-content grid w-64 rounded-md bg-slate-50 p-6 shadow-xl">
       <h2 className="mb-2 text-xl dark:text-white">Log in</h2>
       <form
         onSubmit={handleSubmit(onSubmit)}
@@ -81,9 +80,8 @@ export default function Login() {
         />
         <Input
           id="username"
-          label="username"
           register={register}
-          className={`my-2 h-7 rounded-sm pl-1 text-black`}
+          className={`my-2 h-8 rounded-md border-1 border-neutral-200 pl-1 text-black`}
         />
         <Label htmlFor="password" text="password" />
         <FieldError
@@ -93,13 +91,12 @@ export default function Login() {
         <Input
           type="password"
           id="password"
-          label="password"
           register={register}
-          className={`my-2 h-7 rounded-sm pl-1 text-black`}
+          className={`my-2 h-8 rounded-md border-1 border-neutral-200 pl-1 text-black`}
         />
         <button
           type="submit"
-          className="mt-6 self-stretch rounded-sm border-2 border-gray-800 bg-gray-800 py-1 text-white hover:border-gray-700 hover:bg-gray-700 hover:font-medium active:font-thin"
+          className="mt-6 self-stretch rounded-md border-2 border-gray-800 bg-gray-800 py-1 text-white hover:border-gray-700 hover:bg-gray-700 hover:font-medium active:font-thin"
         >
           Log in
         </button>
@@ -110,6 +107,6 @@ export default function Login() {
       >
         Create account
       </Link>
-    </section>
+    </article>
   );
 }

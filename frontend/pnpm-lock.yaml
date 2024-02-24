@@ -23,6 +23,9 @@ dependencies:
   '@hookform/resolvers':
     specifier: ^3.1.1
     version: 3.1.1(react-hook-form@7.45.1)
+  '@next/font':
+    specifier: ^14.0.1
+    version: 14.0.1
   '@types/node':
     specifier: 20.3.1
     version: 20.3.1
@@ -259,6 +262,10 @@ packages:
     resolution: {integrity: sha512-N/O+zGb6wZQdwu6atMZHbR7T9Np5SUFUjZqCbj0sXm+MwQO35M8TazVB4otm87GkXYs2l6OPwARd3/PUWhZBVQ==}
     dependencies:
       glob: 7.1.7
+    dev: false
+
+  /@next/font@14.0.1:
+    resolution: {integrity: sha512-Kbhhjn7Fj/YoZcRtUb6RuLm/2JffH76fbLiFnV4EGkq6wRUAVA5bwbpI1D9KgmvSyaC2taWnmIuMFpTWl9Q92Q==}
     dev: false
 
   /@next/swc-darwin-arm64@13.4.19:
