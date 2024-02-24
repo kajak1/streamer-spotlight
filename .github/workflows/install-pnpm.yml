@@ -1,0 +1,9 @@
+name: test-actions
+on: [push]
+jobs:
+  Test-Actions:
+    runs-on: ubuntu-20.04
+    steps:
+      - run: "npm install -g pnpm"
+      - run: "pnpm -v"
+
