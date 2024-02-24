@@ -5,28 +5,33 @@
   "main": "src/index.ts",
   "scripts": {
     "start:docker": "npm run dev-server:docker",
-    "start:local": "npm run dev-server:local",
     "init-db:docker": "dotenv -e .env.development -- npx prisma migrate dev --name init",
-    "init-db:local": "dotenv -e .env.development.local -- npx prisma migrate dev name --init",
-    "prepare-prisma-dev_deprecated": "dotenv -e .env.development -- npx prisma migrate dev --name init",
     "dev-server:docker": "nodemon -L -r dotenv/config --exec ts-node-transpile-only src/index.ts dotenv_config_path=.env.development",
+    "prisma-reset:docker": "dotenv -e .env.development -- npx prisma migrate reset",
+    "prisma-seed:docker": "dotenv -e .env.development -- npx prisma db seed",
+    "start:local": "npm run dev-server:local",
+    "init-db:local": "dotenv -e .env.development.local -- npx prisma migrate dev name --init",
     "dev-server:local": "nodemon -L -r dotenv/config --exec ts-node-transpile-only src/index.ts dotenv_config_path=.env.development.local",
-    "test": "dotenv -e .env.test -- ts-mocha ./src/__tests__/**/*.ts",
+    "prisma-reset:local": "dotenv -e .env.development.local -- npx prisma migrate reset",
+    "prisma-seed:local": "dotenv -e .env.development.local -- npx prisma db seed",
+    "test-server": "npm run prepare-prisma-test && dotenv -e .env.test -- nodemon --watch ./**/*.ts --exec ts-node --transpile-only src/index.ts",
     "prepare-prisma-test": "dotenv -e .env.test -- npx prisma migrate dev",
-    "test-server": "npm run prepare-prisma-test && dotenv -e .env.test -- nodemon --watch ./**/*.ts --exec ts-node --transpile-only src/index.ts"
+    "test": "dotenv -e .env.test -- ts-mocha ./src/__tests__/**/*.ts"
   },
   "prisma": {
-    "seed": "dotenv -e .env.development -- ts-node --transpile-only ./prisma/seed.ts"
+    "seed": "ts-node --transpile-only ./prisma/seed.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^4.16.1",
+    "@types/body-parser": "^1.19.5",
     "@types/chai": "^4.3.5",
     "@types/cls-hooked": "^4.3.4",
     "@types/cookie-parser": "^1.4.4",
     "@types/uuid": "^9.0.4",
+    "argon2": "^0.31.1",
     "body-parser": "^1.20.2",
     "chai": "^4.3.7",
     "cls-hooked": "^4.2.2",
@@ -38,10 +43,14 @@
     "express": "^4.18.2",
     "express-async-errors": "^3.1.1",
     "mocha": "^10.2.0",
+    "pbkdf2": "^3.1.2",
     "redis": "^4.6.10",
+    "reflect-metadata": "^0.1.13",
     "sinon": "^15.2.0",
     "socket.io": "^4.7.1",
+    "sqlite3": "^5.1.7",
     "supertest": "^6.3.3",
+    "tsyringe": "^4.8.0",
     "uuid": "^9.0.1",
     "winston": "^3.9.0",
     "zod": "3.21.1",
@@ -54,14 +63,17 @@
     "@types/express": "^4.17.17",
     "@types/mocha": "^10.0.1",
     "@types/sinon": "^10.0.15",
+    "@types/sqlite3": "^3.1.11",
     "@types/supertest": "^2.0.12",
     "@typescript-eslint/eslint-plugin": "^5.60.0",
     "@typescript-eslint/parser": "^5.60.0",
     "eslint": "^8.43.0",
+    "eslint-import-resolver-typescript": "^3.6.1",
+    "eslint-plugin-import": "^2.29.1",
     "nodemon": "^2.0.22",
     "prisma": "^4.16.1",
     "ts-mocha": "^10.0.0",
     "ts-node": "^10.9.1",
-    "typescript": "^5.1.3"
+    "typescript": "^5.3.3"
   }
 }

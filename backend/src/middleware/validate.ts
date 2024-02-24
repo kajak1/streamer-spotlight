@@ -3,11 +3,7 @@ import { AnyZodObject, ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
 
 export function validateBody(schema: AnyZodObject) {
-	return function validatorMiddleware(
-		req: Request,
-		res: Response,
-		next: NextFunction
-	) {
+	return function validatorMiddleware(req: Request, res: Response, next: NextFunction) {
 		try {
 			schema.parse(req.body);
 			next();
@@ -22,11 +18,7 @@ export function validateBody(schema: AnyZodObject) {
 }
 
 export function validateParams(schema: AnyZodObject) {
-	return function validatorMiddleware(
-		req: Request,
-		res: Response,
-		next: NextFunction
-	) {
+	return function validatorMiddleware(req: Request, res: Response, next: NextFunction) {
 		try {
 			schema.parse(req.params);
 			next();

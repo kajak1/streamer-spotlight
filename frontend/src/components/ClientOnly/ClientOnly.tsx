@@ -3,19 +3,19 @@
 import React, { HTMLAttributes } from "react";
 
 interface ClientOnlyProps extends HTMLAttributes<HTMLDivElement> {
-	children: React.ReactNode;
+  children: React.ReactNode;
 }
 
 export function ClientOnly({ children, ...delegated }: ClientOnlyProps) {
-	const [hasMounted, setHasMounted] = React.useState(false);
+  const [hasMounted, setHasMounted] = React.useState(false);
 
-	React.useEffect(() => {
-		setHasMounted(true);
-	}, []);
+  React.useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
-	if (!hasMounted) {
-		return null;
-	}
+  if (!hasMounted) {
+    return null;
+  }
 
-	return <>{children}</>;
+  return children;
 }

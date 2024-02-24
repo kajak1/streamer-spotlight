@@ -1,82 +1,53 @@
 import { NextFunction, Request, Response } from "express";
-import { LoginBody, authRepository } from "../repositories/auth.repository";
-import { usersRepository } from "../repositories/users.repostitory";
-import { ApplicationError } from "../errors/ApplicationError";
-import { logger } from "../logger";
-import { v4 as uuid } from "uuid";
+import { HttpError } from "../errors/ApplicationError";
 import { getRedisClient } from "../redis";
+import { LoginBody } from "../repositories/auth.repository";
+import { AuthService } from "../services/auth.service";
+import { UsersService } from "../services/users.service";
+import { UsersRepository } from "../repositories/users.repostitory";
+import { injectable } from "tsyringe";
 
-class AuthController {
-	constructor() {
-		// empty
-	}
+@injectable()
+export class AuthController {
+	constructor(
+		private usersService: UsersService,
+		private usersRepository: UsersRepository,
+		private authService: AuthService
+	) {}
 
-	register = async (req: Request<unknown, unknown, LoginBody>, res: Response, next: NextFunction): Promise<void> => {
+	throwError = async (req: Request) => {};
+
+	register = async (req: Request<unknown, unknown, LoginBody>, res: Response): Promise<void> => {
 		const { username, password } = req.body;
 
-		const isUsernameAvailable = await usersRepository.isUsernameAvailable(username);
-		if (!isUsernameAvailable) throw new ApplicationError("NAME_ALREADY_EXISTS");
+		const isUsernameAvailable = await this.usersService.isUsernameAvailable({ username: username });
+		if (!isUsernameAvailable) throw new HttpError("FORBIDDEN_USERNAME");
 
-		await usersRepository.insert({ username, password });
+		const hash = await this.authService.hash(password);
 
-		res.json("Registered");
+		await this.usersRepository.insert({ username, password: hash });
+
+		res.status(200).json("Registered");
 	};
 
 	login = async (req: Request<unknown, unknown, LoginBody>, res: Response, next: NextFunction): Promise<void> => {
-		// decode from base64?
+		// TODO decode from base64?
 		const { username, password } = req.body;
 
-		// const sessionId = uuid();
-		// logger.warn(`set cookie sessionId to ${sessionId} `);
-
-		// const second_ms = 1000;
-		// const minute_ms = second_ms * 60;
-		// res.cookie("sessionId", sessionId, {
-		// 	httpOnly: true,
-		// 	secure: true,
-		// 	sameSite: "none",
-		// 	maxAge: minute_ms * 5,
-		// });
-
-		// res.send("Logged in");
-
-		if (!username || !password) {
-			res.status(401).json("Unauthorized");
-			return;
-		}
-
-		const user = await usersRepository.find(username);
-		// TODO check OWASP for appropriate response message
-		if (!user) throw new ApplicationError("NOT_FOUND");
-
-		// TODO check if credentials are correct
-
-		const sessionId = await authRepository.createSession(user.id);
-
-		logger.warn(`set cookie sessionId to ${sessionId} `);
-
-		const second_ms = 1000;
-		const minute_ms = second_ms * 60;
-		res.cookie("sessionId", sessionId, {
-			httpOnly: true,
-			secure: true,
-			sameSite: "none",
-			maxAge: minute_ms * 0.5,
-		});
-
-		res.send("Logged in");
+		const cookie = await this.authService.login({ username, password });
+		res.status(200).cookie(cookie.name, cookie.value, cookie.options).json("Logged in");
 	};
 
-	logout = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-		const { sessionId } = req.cookies;
+	logout = async (req: Request, res: Response): Promise<void> => {
+		const { sessionId } = req.signedCookies;
 
 		try {
-			await getRedisClient().del(`session:${sessionId}`);
+			const redis = await getRedisClient();
+			redis.del(`session:${sessionId}`);
+
 			res.status(200).json("Logged out successfully");
 		} catch (e) {
 			res.status(500).json("Failed to logout");
 		}
 	};
 }
-
-export const authController = new AuthController();

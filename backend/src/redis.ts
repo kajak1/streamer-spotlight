@@ -1,38 +1,32 @@
 import { createClient } from "redis";
-import { logger } from "./logger";
 import { env } from "./env";
+import { container } from "tsyringe";
+import { Logger } from "winston";
 
 type RedisClient = ReturnType<typeof createClient>;
-export let client: RedisClient | null = null;
+let client: RedisClient | null = null;
 
-export function initRedisClient(): void {
+export async function initRedisClient() {
+	const logger = container.resolve<Logger>("Logger");
+
 	client = createClient({
 		url: `redis://${env.REDIS_URL}`,
 	});
 
-	client.on("error", (err) => console.log("Redis Client Error", err));
-
-	client.connect().then((res) => {
-		logger.info("Redis successfully connected");
-	});
+	return client
+		.connect()
+		.then((res) => {
+			logger.info("Redis successfully connected");
+		})
+		.catch((err) => {
+			logger.error("Connection to redis failed");
+			process.exit(0);
+		});
 }
 
-function createRedisClient(): RedisClient {
-	client = createClient({
-		url: `redis://${env.REDIS_URL}`,
-		// url: "redis://redis:6379",
-	});
-
-	client.on("error", (err) => console.log("Redis Client Error", err));
-
-	client.connect().then((res) => {
-		logger.info("Redis successfully connected");
-	});
-
-	return client;
-}
-
-export function getRedisClient(): RedisClient {
-	if (client === null) return createRedisClient();
-	return client;
+export async function getRedisClient(): Promise<RedisClient> {
+	if (client === null) {
+		await initRedisClient();
+	}
+	return client as RedisClient;
 }

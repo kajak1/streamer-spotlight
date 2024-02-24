@@ -1,91 +1,57 @@
-import { NextFunction, Request, Response } from "express";
-import { ApplicationError } from "../errors/ApplicationError";
-import { logger } from "../logger";
-import { usersRepository } from "../repositories/users.repostitory";
+import { Request, Response } from "express";
+import { HttpError } from "../errors/ApplicationError";
+import { UsersService } from "../services/users.service";
 import { GetSpecificParams } from "../shared.types";
-import { getRedisClient } from "../redis";
-import { getPrismaClient } from "../prismaClient";
+import { UsersRepository } from "../repositories/users.repostitory";
+import { injectable } from "tsyringe";
 
-class UsersController {
-	constructor() {
-		// empty
-	}
+@injectable()
+export class UsersController {
+	constructor(private usersService: UsersService, private usersRepository: UsersRepository) {}
 
-	getData = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-		const { sessionId } = req.cookies;
+	getUsers = async (req: Request, res: Response): Promise<void> => {
+		const users = await this.usersRepository.findAll();
 
-		if (!sessionId) {
-			res.status(401).json("no cookie");
-			return;
-		}
+		if (!users) throw new HttpError("NOT_FOUND");
 
-		const userId = await getRedisClient().get(`session:${sessionId}`);
+		res.status(200).json(users);
+	};
 
-		if (!userId) {
-			res.status(403).json("no user connected to this session id");
-			return;
-		}
+	getData = async (req: Request, res: Response): Promise<void> => {
+		const userId = await this.usersService.getUserIdFromSession(req.signedCookies);
 
-		const userData = await getPrismaClient().user.findUnique({
-			where: {
-				id: userId,
-			},
-		});
-
-		if (!userId) {
-			res.status(404).json("user does not exist");
-			return;
-		}
+		const userData = await this.usersRepository.find({ id: userId });
 
 		res.status(200).json(userData);
 	};
 
 	throwError = () => {
-		throw new ApplicationError("UNKNOWN_ERROR");
+		throw new HttpError("UNKNOWN_ERROR");
 	};
 
-	getVotes = async (req: Request, res: Response, next: NextFunction) => {
-		logger.warn(`users.controller.getVotes(); req.ip: ${req.ip}`);
-		const castedVotes = await usersRepository.getVotes(req.ip);
+	getAllVotes = async (req: Request, res: Response) => {
+		const userId = await this.usersService.getUserIdFromSession(req.signedCookies);
+		if (!userId) throw new HttpError("UNAUTHORIZED");
+
+		const castedVotes = await this.usersRepository.getVotes(userId);
 
 		if (!castedVotes) res.status(500);
 
 		res.status(200).json(castedVotes);
 	};
 
-	getVotesOnStreamer = async (req: Request<GetSpecificParams>, res: Response, next: NextFunction) => {
+	getVotesOnStreamer = async (req: Request<GetSpecificParams>, res: Response) => {
 		const { streamerId } = req.params;
-		logger.warn(`users.controller.getVotesOnStreamer(); req.ip: ${req.ip}`);
-		const castedVotesRaw = await usersRepository.getVotes(req.ip);
 
-		if (!castedVotesRaw) res.status(500);
+		const userId = await this.usersService.getUserIdFromSession(req.signedCookies);
 
-		if (castedVotesRaw?.id) {
-			const isDownvoted = castedVotesRaw.Downvote.map(({ streamerId }) => streamerId).reduce((prev, curr) => {
-				if (prev === true) return prev;
-				return curr === streamerId;
-			}, false);
+		const { didUpvote, didDownvote } = await this.usersService.getVotesOnStreamer(userId, streamerId);
 
-			const isUpvoted = castedVotesRaw.Upvote.map(({ streamerId }) => streamerId).reduce((prev, curr) => {
-				if (prev === true) return prev;
-				return curr === streamerId;
-			}, false);
+		const castedVotes = {
+			didUpvote: didUpvote,
+			didDownvote: didDownvote,
+		};
 
-			const castedVotes: {
-				userId: string;
-				isUpvoted: boolean;
-				isDownvoted: boolean;
-			} = {
-				userId: castedVotesRaw.id,
-				isDownvoted,
-				isUpvoted,
-			};
-
-			res.status(200).json(castedVotes);
-			return;
-		}
-		res.status(500);
+		res.status(200).json(castedVotes);
 	};
 }
-
-export const usersController = new UsersController();

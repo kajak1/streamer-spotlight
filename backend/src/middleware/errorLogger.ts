@@ -1,9 +1,12 @@
 import { NextFunction, Request, Response } from "express";
-import { logger } from "../logger";
-import { ApplicationError } from "../errors/ApplicationError";
+import { HttpError } from "../errors/ApplicationError";
+import { container } from "tsyringe";
+import { Logger } from "winston";
 
 export function errorLogger(err: Error, req: Request, res: Response, next: NextFunction) {
-	if (err instanceof ApplicationError) {
+	const logger = container.resolve<Logger>("Logger");
+
+	if (err instanceof HttpError) {
 		if (err.baseError instanceof Error) {
 			logger.error(err.baseError.stack);
 		} else {

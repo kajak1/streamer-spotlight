@@ -1,18 +1,21 @@
-import express, { Request, Response } from "express";
-import { handleAsyncErrors } from "../middleware/errorHandler";
-import { authController } from "../controllers/auth.controller";
+import { Request, Response, Router } from "express";
+import { container } from "tsyringe";
+import { AuthController } from "../controllers/auth.controller";
+import { catchAsync } from "../middleware/errorHandler";
 import { protect } from "../middleware/protect";
 
-const authRouter = express.Router();
+export function authRouting(): Router {
+	const authRouter = Router();
+	const authController = container.resolve(AuthController);
 
-const BASE_URL = "/auth";
+	const BASE_URL = "/auth";
 
-// TODO refactor endpoint to correctly suit REST standard
-authRouter.post(`${BASE_URL}/register`, handleAsyncErrors(authController.register));
-authRouter.post(`${BASE_URL}/login`, handleAsyncErrors(authController.login));
-authRouter.post(`${BASE_URL}/login`, protect, handleAsyncErrors(authController.logout));
-authRouter.get(`${BASE_URL}/test`, protect, (req: Request, res: Response) => {
-	res.status(200).json("hello in auth/test");
-});
+	authRouter.post(`${BASE_URL}/register`, catchAsync(authController.register));
+	authRouter.post(`${BASE_URL}/login`, catchAsync(authController.login));
+	authRouter.post(`${BASE_URL}/logout`, protect, catchAsync(authController.logout));
+	authRouter.get(`${BASE_URL}/test`, protect, (req: Request, res: Response) => {
+		res.status(200).json("hello in auth/test");
+	});
 
-export { authRouter };
+	return authRouter;
+}

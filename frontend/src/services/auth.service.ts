@@ -5,12 +5,12 @@ class AuthService extends Service {
 
 	constructor() {
 		super({
-			withCredentials: true
+			withCredentials: true,
 		});
 	}
 
 	login = async (credentials: LoginBody) => {
-		const response = await this.api.post(`${this.AUTH_ENDPOINT}/login`, credentials, { withCredentials: true });
+		const response = await this.api.post(`${this.AUTH_ENDPOINT}/login`, credentials);
 
 		return response;
 	};
@@ -22,11 +22,9 @@ class AuthService extends Service {
 	};
 
 	logout = async () => {
+		const response = await this.api.post(`${this.AUTH_ENDPOINT}/logout`);
 
-		// TODO change delete to post
-		const response = await this.api.post(`${this.AUTH_ENDPOINT}/login`, { withCredentials: true });
-
-		return response
+		return response;
 	};
 }
 

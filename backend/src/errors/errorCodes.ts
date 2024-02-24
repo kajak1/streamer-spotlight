@@ -1,4 +1,8 @@
-export type ErrorCodes =
+export type ErrorTags =
+	| "FORBIDDEN_USERNAME"
+	| "INVALID_CREDENTIALS"
+	| "UNAUTHORIZED"
+	| "FORBIDDEN"
 	| "UNKNOWN_ERROR"
 	| "NOT_FOUND"
 	| "MISSING_PARAMETERS"
@@ -8,39 +12,56 @@ export type ErrorCodes =
 	| "PLATFORM_NOT_ALLOWED";
 
 type ErrorCodesMap = {
-	[ErrorTag in ErrorCodes]: {
+	[ErrorTag in ErrorTags]: {
 		code: number;
-		message: string;
+		description: string;
 	};
 };
 
+// TODO clear up the differences between 401 and 403
 export const errorCodes: ErrorCodesMap = {
+	FORBIDDEN_USERNAME: {
+		code: 400,
+		description: "You cannot use that username",
+	},
+	INVALID_CREDENTIALS: {
+		code: 401,
+		description: "Invalid Username or Password",
+	},
+	FORBIDDEN: {
+		code: 403,
+		description: "Forbidden",
+	},
+	UNAUTHORIZED: {
+		code: 401,
+		description: "Unauthorized",
+	},
 	UNKNOWN_ERROR: {
 		code: 500,
-		message: "Internal server error",
+		description: "Internal server error",
 	},
 	NOT_FOUND: {
 		code: 404,
-		message: "Not found",
+		description: "Not found",
 	},
 	MISSING_PARAMETERS: {
 		code: 400,
-		message: "Missing parameter",
+		description: "Missing parameter",
 	},
 	MISSING_BODY: {
 		code: 400,
-		message: "Missing body",
+		description: "Missing body",
 	},
 	NAME_ALREADY_EXISTS: {
 		code: 400,
-		message: "Streamer with this name already exists",
+		description: "Streamer with this name already exists",
 	},
 	ALREADY_VOTED: {
 		code: 400,
-		message: "You have already voted",
+		description: "You have already voted",
 	},
 	PLATFORM_NOT_ALLOWED: {
 		code: 400,
-		message: "Chosen platform is not allowed",
+		description: "Chosen platform is not allowed",
 	},
 };

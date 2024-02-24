@@ -1,8 +1,16 @@
-import { CustomError } from "./CustomError";
-import { ErrorCodes } from "./errorCodes";
+import { AdditionalInfo, CustomError } from "./CustomError";
+import { ErrorTags, errorCodes } from "./errorCodes";
 
-export class ApplicationError extends CustomError {
-	constructor(message: ErrorCodes, public baseError?: unknown) {
-		super(message);
+interface HttpErrorExtraProperties {
+	readonly code: number;
+}
+
+export class HttpError extends CustomError implements HttpErrorExtraProperties {
+	readonly code: number;
+	
+	constructor(message: ErrorTags, optional?: AdditionalInfo) {
+		super(message, optional);
+
+		this.code = errorCodes[message].code;
 	}
 }

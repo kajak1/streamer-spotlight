@@ -1,14 +1,19 @@
+import { useStreamers } from "@/src/hooks/use-streamers";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { ReactNode } from "react";
 
 interface Props {
-	children: ReactNode;
+  children: ReactNode;
 }
 
 export function StreamerList({ children }: Props): JSX.Element {
-	return (
-		<section className="w-full py-6">
-			<h2 className="text-xl pb-4 dark:text-white">Streamers:</h2>
-			{children}
-		</section>
-	);
+  const { isValidating } = useStreamers();
+
+  return (
+    <section className="justify-self-end">
+      {isValidating ? <FontAwesomeIcon icon={faSpinner} spin /> : null}
+      {children}
+    </section>
+  );
 }

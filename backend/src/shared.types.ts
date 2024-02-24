@@ -1,12 +1,4 @@
-import { Streamer } from "@prisma/client";
 import { z } from "zod";
-
-export type GetAllResponse = Streamer & {
-	_count: {
-		Downvote: number;
-		Upvote: number;
-	};
-};
 
 export const voteTypeSchema = z.object({
 	voteType: z.union([z.literal("upvote"), z.literal("downvote")]),

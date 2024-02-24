@@ -1,31 +1,39 @@
-import { Streamer, Platform } from "@prisma/client";
+import { Platform, Streamer, User } from "@prisma/client";
 
-export const user101: Streamer = {
-	id: "3b40824d-a3b6-44d9-95a1-5f21ebcf9101",
-	name: "user101",
+export const user101 = {
+	id: "4b451aae-a594-41aa-b41f-3939ef0aceda",
+	username: "user101",
+	password: "user101-password",
+
+} as const satisfies User;
+
+export const streamer101 = {
+	id: "e0ade5cb-a933-45dd-8828-04fb933b395f",
+	name: "streamer101",
 	description: "lorem impsum",
 	platformId: "ead18de8-1ec5-4e3f-8c70-1d8de1b43ef8",
-};
+	uploaded_by: user101.id,
+} as const satisfies Streamer;
 
-export const platforms101: Platform[] = [
+export const platforms101 = [
 	{
-		id: "ead18de8-1ec5-4e3f-8c70-1d8de1b43ef8",
+		id: "7df30f1e-0652-4826-98cc-a45c71b4edcd",
 		type: "Twitch",
 	},
 	{
-		id: "9203d9b5-0e95-4ace-8fc2-b0d9da0c3023",
+		id: "f0c8cfbf-ed8d-4e2a-bc6e-829dc0d67cc6",
 		type: "YouTube",
 	},
 	{
-		id: "c18cbf47-c0e7-459f-959d-fced8532efcb",
+		id: "3ad4090f-6d18-410d-a626-6e6d98405537",
 		type: "Rumble",
 	},
 	{
-		id: "fa813a2f-80c2-4ebe-b46b-6f86b3615b6b",
+		id: "e5a5a322-2f0a-46bb-affc-aa3d5a68de73",
 		type: "TikTok",
 	},
 	{
-		id: "0c263310-0528-41c4-aeae-7d366887e6ad",
+		id: "c0cd5b2c-8226-4c4c-8588-2ed510c6d9c8",
 		type: "Kick",
 	},
-];
+] as const satisfies Platform[];

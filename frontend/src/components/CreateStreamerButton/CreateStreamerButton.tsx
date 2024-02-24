@@ -1,16 +1,21 @@
 interface Props {
-	onClick: () => void;
+  onClick: () => void;
 }
 
-function CreateStreamerButton({ onClick }: Props): JSX.Element {
-	return (
-		<button
-			onClick={onClick}
-			className="w-full py-2 rounded-md border-gray-300 hover:bg-gray-300 bg-gray-200 dark:border-blue-700 dark:bg-blue-800 dark:hover:bg-blue-900 dark:text-white border-2"
-		>
-			Add your streamer!
-		</button>
-	);
+export function CreateStreamerButton({ onClick }: Props): JSX.Element {
+  return (
+    <button
+      onClick={onClick}
+      className="hover:font-regular mb-6 w-full self-stretch rounded-md border-0 border-gray-800 bg-gray-800 py-3 font-semibold text-white shadow-md hover:border-gray-700 hover:bg-gray-700 active:font-thin"
+    >
+      ADD YOURS
+    </button>
+  );
 }
 
-export { CreateStreamerButton };
+// <button
+//   onClick={onClick}
+//   className="hover:font-regular w-full self-stretch rounded-md border-2 border-gray-800 bg-gray-800 py-2 text-white hover:border-gray-700 hover:bg-gray-700 active:font-thin"
+// >
+//   Add your streamer!
+// </button>
