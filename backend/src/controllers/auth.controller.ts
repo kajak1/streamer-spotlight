@@ -44,7 +44,7 @@ export class AuthController {
 		try {
 			const redis = await getRedisClient();
 			redis.del(`session:${sessionId}`);
-
+			// TODO cancel setTimeout
 			res.status(200).json("Logged out successfully");
 		} catch (e) {
 			res.status(500).json("Failed to logout");

@@ -8,31 +8,37 @@ function serializeCookie<const T extends RequestCookie>(
   return `${cookie.name}=${cookie.value}`;
 }
 
-const API_ADDRESS = process.env.NODE_ENV_SUBTYPE === "docker" ? process.env.API_ADDRESS : process.env.NEXT_PUBLIC_API_ADDRESS
+const API_ADDRESS =
+  process.env.NODE_ENV_SUBTYPE === "docker"
+    ? process.env.API_ADDRESS
+    : process.env.NEXT_PUBLIC_API_ADDRESS;
 
 export async function middleware(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith("/login")) {
     const sessionId = request.cookies.get("sessionId");
-
     if (!sessionId) return;
 
-    const response = await fetch(`http://${API_ADDRESS}/users/me`, {
-      credentials: "include",
-      headers: {
-        Cookie: serializeCookie(sessionId),
-      },
-    });
+    try {
+      const response = await fetch(`http://${API_ADDRESS}/users/me`, {
+        credentials: "include",
+        headers: {
+          Cookie: serializeCookie(sessionId),
+        },
+      });
 
-    if (response.ok) return NextResponse.redirect(new URL("/", request.url));
+      if (response.ok) return NextResponse.redirect(new URL("/", request.url));
+    } catch (e) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
   }
 
   if (request.nextUrl.pathname === "/") {
+    const sessionId = request.cookies.get("sessionId");
+
+    if (!sessionId)
+      return NextResponse.redirect(new URL("/login", request.url));
+
     try {
-      const sessionId = request.cookies.get("sessionId");
-
-      if (!sessionId)
-        return NextResponse.redirect(new URL("/login", request.url));
-
       const response = await fetch(`http://${API_ADDRESS}/users/me`, {
         credentials: "include",
         headers: {

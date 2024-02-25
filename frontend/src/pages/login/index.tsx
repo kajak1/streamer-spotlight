@@ -2,13 +2,13 @@ import { FieldError, Input, Label } from "@/src/components/FormFields";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { isAxiosError } from "axios";
 import Link from "next/link";
-import Router from "next/router";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { mutate } from "swr";
 import { z } from "zod";
 import { authService } from "../../services/auth.service";
 import { SWR_KEYS } from "../../swr-keys";
+import { useRouter } from "next/router";
 
 // TODO backend/src/error/CustomError.ts prepareToSend() type
 export interface ErrorShape {
@@ -43,11 +43,13 @@ export default function Login() {
     mode: "onSubmit",
   });
 
+  const router = useRouter();
+
   async function onSubmit(data: LoginSchema) {
     try {
-      const resposne = await authService.login(data);
-      console.log("Login response:", resposne.data);
-      Router.replace("/");
+      const response = await authService.login(data);
+      await router.push("/");
+      console.log("pushed")
     } catch (e) {
       if (isAxiosError<ErrorShape>(e)) {
         const description = e.response?.data.error.description;

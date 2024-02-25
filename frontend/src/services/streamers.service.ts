@@ -1,5 +1,5 @@
 import type { UploadBody, VoteTypeBody } from "@backend/shared.types";
-import { GetAllResponse, Streamer } from "../shared.types";
+import { Streamer } from "../shared.types";
 import { Service } from "./service";
 import { isAxiosError } from "axios";
 
@@ -20,11 +20,9 @@ class StreamersService extends Service {
     return response.data;
   };
 
-  getAll = async (): Promise<GetAllResponse[]> => {
+  getAll = async (): Promise<Streamer[]> => {
     try {
-      const response = await this.api.get<GetAllResponse[]>(
-        this.STREAMERS_ENDPOINT,
-      );
+      const response = await this.api.get<Streamer[]>(this.STREAMERS_ENDPOINT);
 
       return response.data;
     } catch (e) {

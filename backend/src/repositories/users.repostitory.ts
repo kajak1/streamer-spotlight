@@ -30,15 +30,9 @@ export class UsersRepository {
 		}
 	};
 
-	find = async (args: Prisma.UserFindUniqueArgs["where"]) => {
+	find = async (args: Prisma.UserFindUniqueArgs) => {
 		try {
-			const foundUser = await getPrismaClient().user.findUnique({
-				where: args,
-				select: {
-					username: true,
-					id: true,
-				},
-			});
+			const foundUser = await getPrismaClient().user.findUnique(args);
 
 			return foundUser;
 		} catch (e) {

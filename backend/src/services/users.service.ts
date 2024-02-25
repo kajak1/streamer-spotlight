@@ -7,9 +7,9 @@ import { UsersRepository } from "../repositories/users.repostitory";
 export class UsersService {
 	constructor(private usersRepository: UsersRepository) {}
 
-	isUsernameAvailable = async (args: Parameters<UsersRepository["find"]>[0]) => {
+	isUsernameAvailable = async (args: Parameters<UsersRepository["find"]>[0]["where"]) => {
 		try {
-			const user = await this.usersRepository.find(args);
+			const user = await this.usersRepository.find({ where: args });
 
 			const isAvailable = user === null;
 
@@ -20,7 +20,7 @@ export class UsersService {
 	};
 
 	getUserIdFromSession = async ({ sessionId }: Record<string, string>): Promise<string> => {
-		const redis = await getRedisClient()
+		const redis = await getRedisClient();
 		const userId = await redis.get(`session:${sessionId}`);
 		if (!userId) throw new HttpError("UNAUTHORIZED");
 

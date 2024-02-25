@@ -59,7 +59,11 @@ export class AuthService {
 		const second_ms = 1000;
 		const minute_ms = second_ms * 60;
 
-		const user = await this.usersRepository.find({ username: credentials.username });
+		const user = await this.usersRepository.find({
+			where: {
+				username: credentials.username,
+			},
+		});
 
 		if (!user) throw new HttpError("INVALID_CREDENTIALS");
 

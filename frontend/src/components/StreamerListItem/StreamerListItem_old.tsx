@@ -1,4 +1,4 @@
-import { Streamer } from "@/src/shared.types";
+import { GetAllResponse } from "@/src/shared.types";
 import Image from "next/image";
 import Link from "next/link";
 import { useRandomImage } from "../../hooks/use-random-image";
@@ -7,8 +7,8 @@ import { VoteButtonGroup } from "../VoteButtonGroup";
 import { useStreamerListItem } from "./use-streamer-list-item";
 
 export interface StreamerListItemProps {
-  id: Streamer["id"];
-  name: Streamer["name"];
+  id: GetAllResponse["id"];
+  name: GetAllResponse["name"];
 }
 
 export function StreamerListItem(props: StreamerListItemProps): JSX.Element {
@@ -17,8 +17,8 @@ export function StreamerListItem(props: StreamerListItemProps): JSX.Element {
     votes,
     areVotesLoading,
     votesError,
-    didUpvote,
-    didDownvote,
+    didUpvote: isUpvoted,
+    didDownvote: isDownvoted,
   } = useStreamerListItem(props);
   const { data: image } = useRandomImage(props.name);
 
@@ -36,10 +36,10 @@ export function StreamerListItem(props: StreamerListItemProps): JSX.Element {
 
   const upvoteButton = (
     <VoteButton
-      className="flex items-center gap-1"
+      className="flex flex-1 flex-row items-start justify-center"
       amount={votes._count.Upvote}
       onClick={
-        didUpvote ? handleVote("upvote", "remove") : handleVote("upvote", "add")
+        isUpvoted ? handleVote("upvote", "remove") : handleVote("upvote", "add")
       }
     >
       <Image src="/arrow-up.svg" alt="upvote arrow" width={18} height={25} />
@@ -48,10 +48,10 @@ export function StreamerListItem(props: StreamerListItemProps): JSX.Element {
 
   const downvoteButton = (
     <VoteButton
-      className="flex items-center gap-1"
+      className="flex flex-1 flex-row items-end justify-center"
       amount={votes._count.Downvote}
       onClick={
-        didDownvote
+        isDownvoted
           ? handleVote("downvote", "remove")
           : handleVote("downvote", "add")
       }
@@ -66,35 +66,40 @@ export function StreamerListItem(props: StreamerListItemProps): JSX.Element {
   );
 
   return (
-    <li className="flex aspect-[8.7/3] h-40 gap-5 overflow-hidden rounded-xl border-1 bg-white">
-      <div className="flex flex-1 gap-7 rounded-md border-gray-700  bg-white">
-        <div className="relative aspect-square h-full overflow-hidden bg-gray-400 dark:border-gray-600">
-          {image && (
+    <li className="flex aspect-[27/7] h-28 gap-5 rounded-lg border-1 border-gray-500 bg-white px-5 py-4">
+      {/* <li className="flex w-3/5 rounded-md border-1 border-gray-700 bg-white"> */}
+      {/* <li className="flex w-3/5 gap-1"> */}
+
+      <VoteButtonGroup buttons={[upvoteButton, downvoteButton]} />
+      <div className="flex flex-1 gap-5 rounded-md border-gray-700  bg-white">
+        <div className="relative aspect-square h-20 overflow-hidden rounded-full dark:border-gray-600">
+          {image ? (
             <Image
               src={URL.createObjectURL(image)}
               alt="Streamer's image"
               className="object-cover"
               fill
             />
+          ) : (
+            <Image
+              src="/fallback_image.png"
+              sizes="50px"
+              alt="Streamer's image"
+              fill
+            />
           )}
         </div>
-        <div className="grid flex-1 grid-rows-2 flex-col pb-[1.4rem] pr-6 pt-6">
-          <div className="flex flex-col gap-3">
-            <h3 className="text-xl leading-tight">{props.name}</h3>
-            <span className="text-lg leading-tight text-gray-500">
-              {props.name}
-            </span>
-          </div>
-          <div className="self-end flex items-center justify-between">
-            <VoteButtonGroup buttons={[upvoteButton, downvoteButton]} />
-            <Link
-              href={`/${encodeURIComponent(props.id)}`}
-              className="rounded-md border-1 border-gray-300 px-5 py-2 text-sm font-normal leading-4 text-blue-500 active:bg-gray-800 active:font-medium active:text-white"
-            >
-              Details
-            </Link>
-          </div>
+        <div className="grid flex-1 flex-shrink-0 grid-rows-2">
+          <h3 className="break-all text-xl flex items-center">{props.name}</h3>
+          <span className="break-all text-lg text-gray-500">{props.name}</span>
         </div>
+        <Link
+          href={`/${encodeURIComponent(props.id)}`}
+          className="self-center rounded-md border-1 border-gray-300 px-4 py-2 text-sm font-normal leading-4 text-blue-500 active:bg-gray-800 active:font-medium active:text-white"
+          // className="h-fit border-1 px-2 py-1 rounded-md border-gray-300 hover:bg-gray-300 bg-gray-200 dark:bg-blue-800 dark:hover:bg-blue-900 dark:border-blue-700"
+        >
+          Details
+        </Link>
       </div>
     </li>
   );

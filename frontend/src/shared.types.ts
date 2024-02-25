@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export type GetAllResponse = Streamer;
+// export type GetAllResponse = Streamer[];
 
 export const voteTypeSchema = z.object({
   voteType: z.union([z.literal("upvote"), z.literal("downvote")]),

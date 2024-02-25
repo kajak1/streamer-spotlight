@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
+import { injectable } from "tsyringe";
 import { HttpError } from "../errors/ApplicationError";
+import { UsersRepository } from "../repositories/users.repostitory";
 import { UsersService } from "../services/users.service";
 import { GetSpecificParams } from "../shared.types";
-import { UsersRepository } from "../repositories/users.repostitory";
-import { injectable } from "tsyringe";
 
 @injectable()
 export class UsersController {
@@ -20,7 +20,15 @@ export class UsersController {
 	getData = async (req: Request, res: Response): Promise<void> => {
 		const userId = await this.usersService.getUserIdFromSession(req.signedCookies);
 
-		const userData = await this.usersRepository.find({ id: userId });
+		const userData = await this.usersRepository.find({
+			where: {
+				id: userId,
+			},
+			select: {
+				id: true,
+				username: true,
+			},
+		});
 
 		res.status(200).json(userData);
 	};

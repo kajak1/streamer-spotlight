@@ -6,6 +6,7 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import { mutate } from "swr";
 import { ThemeSwitch } from "../ThemeSwitch";
+import { useRouter } from "next/router";
 
 export function Header() {
   const { user, loggedOut } = useUser();
@@ -22,10 +23,12 @@ interface AuthenticatedHeaderProps {
 }
 
 export function AuthenticatedHeader({ user }: AuthenticatedHeaderProps) {
+  const router = useRouter();
+
   async function handleLogout() {
     try {
       await authService.logout();
-      await mutate(SWR_KEYS.USER);
+      await Promise.all([router.push("/login"), mutate(SWR_KEYS.USER)]);
     } catch (e) {
       toast.error("Failed to logout");
     }
