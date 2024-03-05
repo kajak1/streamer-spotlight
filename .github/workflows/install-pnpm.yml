@@ -1,9 +1,21 @@
 name: test-actions
 on: [push]
 jobs:
-  Test-Actions:
+  Run-Backend:
     runs-on: ubuntu-20.04
+    services:
+      redis:
+        image: redis
     steps:
-      - run: "npm install -g pnpm"
-      - run: "pnpm -v"
+      - uses: actions/checkout@v4
+      - name: "Setup backend and run tests"
+        working-directory: ./backend
 
+        run: |
+          npm install -g pnpm
+          pnpm i
+          pnpm prepare-prisma-test:deploy
+          pnpm prisma generate
+          pnpm test-server:deploy
+          pnpm test
+      
