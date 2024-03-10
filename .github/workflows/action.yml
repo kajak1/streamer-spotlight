@@ -1,0 +1,24 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        working-directory: ./backend
+        run: |
+          docker build -t backend . --file Dockerfile
+      - name: Run container
+        run: docker run --name backend_cont -e REDIS_URL=localhost:6379 -p 127.0.0.1:3001:3001 backend

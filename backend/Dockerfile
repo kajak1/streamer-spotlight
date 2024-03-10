@@ -11,10 +11,8 @@ RUN pnpm install
 
 COPY . .
 
-# RUN ls prisma/
-
 RUN pnpm init-db:docker
 
-# RUN dotenv -e .env.development -- npx prisma db seed
+CMD [ "pnpm", "start:docker" ]
 
 EXPOSE 3001
